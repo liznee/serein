@@ -217,6 +217,11 @@ scripts/   安装、检查、测试和发布辅助脚本
 - [Push Kit 配置](docs/PUSH_KIT_SETUP.md)
 - [官网维护说明](docs/WEBSITE_IMPLEMENTATION.md)
 
+## 联系
+
+- 官网：<https://www.serein.run>
+- 邮箱：<contact@serein.run>（产品反馈、合作或其他事项）
+
 ## 已知限制
 
 - 当前公开候选版只提供 HarmonyOS 客户端；
