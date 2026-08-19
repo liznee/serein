@@ -4,7 +4,7 @@
 
 > 面向 HarmonyOS 的 Claude Code / Codex 自托管移动工作台：在手机上继续本地 CLI 会话，并为 Claude Code 提供远程风险审批。
 
-**当前状态：开源 V1.0 Release Candidate。** 候选版已通过自动化测试、公开导出、依赖审计和独立构建；Push Kit 正式身份与同一台真机 100 次端到端回归仍是 GA 门禁。RC 可以体验和审计，不建议直接连接拥有生产权限的主机。
+**当前状态：源码公开（非商用许可）V1.0 Release Candidate。** 候选版已通过自动化测试、公开导出、依赖审计和独立构建；Push Kit 正式身份与同一台真机 100 次端到端回归仍是 GA 门禁。RC 可以体验和审计，不建议直接连接拥有生产权限的主机。
 
 Serein 由个人维护并大量使用 AI 协助开发。它不隶属于 Anthropic、OpenAI 或华为，也不提供这些平台的账号、额度或模型服务。
 
@@ -248,4 +248,4 @@ irm https://www.serein.run/install.ps1 | iex
 
 ## License
 
-[PolyForm Noncommercial 1.0.0](LICENSE)
+[PolyForm Noncommercial 1.0.0](LICENSE) — 源码公开，允许**个人 / 学习 / 研究 / 非商业自用**；商业使用、商业分发、SaaS 或集成到商业产品需另行取得书面授权（contact@serein.run）。

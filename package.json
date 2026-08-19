@@ -1,7 +1,7 @@
-{
+﻿{
   "name": "@serein/cli",
   "version": "1.0.0",
-  "description": "Claude Code 与 Codex 的自托管移动会话桥接，并为 Claude Code 提供远程工具审批",
+  "description": "Claude Code 涓?Codex 鐨勮嚜鎵樼绉诲姩浼氳瘽妗ユ帴锛屽苟涓?Claude Code 鎻愪緵杩滅▼宸ュ叿瀹℃壒",
   "main": "bin/serein.js",
   "bin": {
     "serein": "./bin/serein.js"
@@ -69,3 +69,4 @@
     "three": "^0.160.0"
   }
 }
+
