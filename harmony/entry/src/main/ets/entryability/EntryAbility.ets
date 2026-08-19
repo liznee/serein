@@ -146,8 +146,7 @@ export default class EntryAbility extends UIAbility {
         let ntfyBase = AppStorage.get<string>('ntfyBaseUrl') ?? ''
         if (ntfyBase === '') {
           // 从后端 URL 推导 ntfy 地址：替换最左子域为 ntfy
-          // 如 your-backend.example → your-ntfy.example
-          // 如 api.custom-server.com → ntfy.custom-server.com（需实际存在 ntfy 服务）
+          // 如 api.example.com → ntfy.example.com（需实际存在 ntfy 服务）
           // 如 a.b.c.d.com → ntfy.b.c.d.com（原 slice(-2) 产生 ntfy.d.com，多级子域名错误）
           const m = backendUrl.match(/^https?:\/\/([^/:]+)/)
           if (m !== null && m.length > 1) {
@@ -164,7 +163,14 @@ export default class EntryAbility extends UIAbility {
             }
           }
         }
-        if (ntfyBase === '') ntfyBase = 'https://your-ntfy.example'
+        // 安全：不提供第三方默认 ntfy 服务器。
+        // ntfy 只能来自：①用户显式配置（ntfyBaseUrl）②从用户自己的后端域名推导。
+        // 推导失败（如 IP 地址后端、单级域名）时不启用 ntfy 推送，App 回退到
+        // HTTP 轮询（走用户自己的后端），避免把用户通知流量引到任何第三方服务器。
+        if (ntfyBase === '') {
+          console.info('serein push: no ntfy base derived, falling back to HTTP polling only')
+          return
+        }
         console.info('serein push: ntfyBase=' + ntfyBase)
         ApprovalPushService.start(ntfyBase, 'serein-approvals')
       }

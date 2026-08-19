@@ -21,7 +21,7 @@ const KEY_TERM_SESSION_PREFIX = 'term_session_'
 // session 数据最大行数（限制持久化大小）
 const MAX_SAVED_SESSION_LINES = 500
 
-/** 默认后端地址（用户自己的服务器，用户在设置页可修改） */
+/** 默认后端地址（空 = 未配置，用户必须输入或扫码填写自己的后端） */
 // 不连接任何第三方默认服务；首次使用必须扫描或输入用户自己的后端。
 const DEFAULT_BACKEND_URL = ''
 
