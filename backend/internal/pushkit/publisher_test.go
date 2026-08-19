@@ -80,7 +80,7 @@ func TestSendApprovalUsesMinimalPayload(t *testing.T) {
 	if body == "" {
 		t.Fatal("push request was not sent")
 	}
-	for _, forbidden := range []string{"server-only-secret", "access-token", "rm -rf", `C:\\hobby`} {
+	for _, forbidden := range []string{"server-only-secret", "access-token", "rm -rf", `C:\\workspace`} {
 		if strings.Contains(body, forbidden) {
 			t.Fatalf("push payload leaked forbidden value %q", forbidden)
 		}

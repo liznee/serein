@@ -303,7 +303,7 @@ if (WORK_SCOPE && REQUESTED_AGENT_SESSION_ID) {
 }
 
 // ── Session JSONL 目录（根据 agent 类型动态选择）──
-// C:/workspace/serein → C--hobby-serein
+// C:/workspace/serein → C--workspace-serein
 const sessionDirName = PROJECT_PATH
 .replace(/[/\\]+$/, '')
 .replace(/[/\\]/g, '-')

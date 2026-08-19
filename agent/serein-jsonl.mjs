@@ -5,7 +5,7 @@
  * 通过回调推送 thinking / text / tool_use / tool_result 到手机端。
  *
  * JSONL 文件路径：~/.claude/projects/<project-dir>/<session_id>.jsonl
- * 项目目录名规则：C:/workspace/serein → C--hobby-serein
+ * 项目目录名规则：C:/workspace/serein → C--workspace-serein
  *
  * 事件类型映射：
  *   JSONL assistant/thinking  → callback('thinking', content)
