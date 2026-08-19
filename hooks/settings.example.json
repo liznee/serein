@@ -1,0 +1,26 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "py <PROJECT_ROOT>/hooks/approval_hook.py",
+            "timeout": 360
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "py <PROJECT_ROOT>/hooks/approval_hook.py",
+            "timeout": 360
+          }
+        ]
+      }
+    ]
+  }
+}

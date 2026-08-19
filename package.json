@@ -1,0 +1,71 @@
+{
+  "name": "@serein/cli",
+  "version": "1.0.0",
+  "description": "Claude Code 与 Codex 的自托管移动会话桥接，并为 Claude Code 提供远程工具审批",
+  "main": "bin/serein.js",
+  "bin": {
+    "serein": "./bin/serein.js"
+  },
+  "scripts": {
+    "setup": "node scripts/postinstall.js",
+    "serein": "node bin/serein.js",
+    "doctor": "node bin/serein.js doctor",
+    "build:web": "esbuild ui/workflow-scene.js --bundle --minify --format=iife --loader:.glb=dataurl --outfile=ui/assets/workflow-scene.bundle.js",
+    "preview:web": "node scripts/serve-ui.mjs",
+    "test": "node --test scripts/*.test.js",
+    "release:check": "node scripts/release-check.js"
+  },
+  "files": [
+    "bin/",
+    "agent/serein.mjs",
+    "agent/agent-registry.mjs",
+    "agent/trust-prompt.mjs",
+    "agent/codex-pty-prompt.mjs",
+    "agent/codex-jsonl.mjs",
+    "agent/codex-app-server.mjs",
+    "agent/codex-app-events.mjs",
+    "agent/codex-thread-lease.mjs",
+    "agent/serein-ws.mjs",
+    "agent/serein-watchdog.mjs",
+    "agent/serein-jsonl.mjs",
+    "agent/serein-util.mjs",
+    "agent/serein.bat",
+    "agent/agent_watchdog.vbs",
+    "agent/local_agent.py",
+    "agent/remote_host_manager.py",
+    "agent/agent_config.py",
+    "agent/agent_daemon.py",
+    "agent/agent_exec.py",
+    "agent/agent_proc.py",
+    "agent/agent_shell_chain.py",
+    "agent/common.py",
+    "agent/sysinfo.py",
+    "agent/terminal_client.py",
+    "hooks/approval_hook.py",
+    "hooks/risk_classify.py",
+    "hooks/settings.example.json",
+    "scripts/postinstall.js",
+    "scripts/doctor.js",
+    "scripts/doctor-lib.js",
+    "install.ps1"
+  ],
+  "dependencies": {
+    "node-pty": "^1.1.0",
+    "qrcode-terminal": "^0.12.0",
+    "ws": "^8.21.0"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "os": [
+    "win32",
+    "darwin",
+    "linux"
+  ],
+  "license": "PolyForm-Noncommercial-1.0.0",
+  "devDependencies": {
+    "esbuild": "^0.25.8",
+    "gsap": "^3.15.0",
+    "three": "^0.160.0"
+  }
+}

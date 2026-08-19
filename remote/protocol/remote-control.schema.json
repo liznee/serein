@@ -1,0 +1,258 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://serein.run/schemas/remote-control.v1.json",
+  "title": "Serein Remote Control Protocol v1",
+  "oneOf": [
+    { "$ref": "#/$defs/hostCapabilities" },
+    { "$ref": "#/$defs/sessionState" },
+    { "$ref": "#/$defs/pointerMoveAbsolute" },
+    { "$ref": "#/$defs/signalClientReady" },
+    { "$ref": "#/$defs/signalDescription" },
+    { "$ref": "#/$defs/signalIce" },
+    { "$ref": "#/$defs/signalPeerLeft" }
+  ],
+  "$defs": {
+    "protocolVersion": {
+      "type": "integer",
+      "const": 1
+    },
+    "sessionId": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9._:-]+$"
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "sessionStateName": {
+      "type": "string",
+      "enum": [
+        "idle",
+        "requesting",
+        "waiting_host",
+        "waiting_consent",
+        "negotiating",
+        "connected_view",
+        "connected_control",
+        "reconnecting",
+        "ending",
+        "ended",
+        "failed"
+      ]
+    },
+    "hostCapabilities": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "v",
+        "type",
+        "host_id",
+        "capture",
+        "video_codecs",
+        "transports",
+        "hardware_encoder",
+        "input",
+        "monitors",
+        "unattended_enabled",
+        "secure_desktop",
+        "generated_at_ms"
+      ],
+      "properties": {
+        "v": { "$ref": "#/$defs/protocolVersion" },
+        "type": { "const": "remote.host.capabilities" },
+        "host_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "capture": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": ["dxgi-duplication", "windows-graphics-capture"]
+          }
+        },
+        "video_codecs": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": ["h264", "h265", "av1"]
+          }
+        },
+        "transports": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": ["webrtc"]
+          }
+        },
+        "hardware_encoder": { "type": "boolean" },
+        "input": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": ["pointer", "keyboard", "text"]
+          }
+        },
+        "monitors": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 32
+        },
+        "unattended_enabled": { "type": "boolean" },
+        "secure_desktop": { "type": "boolean" },
+        "generated_at_ms": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "sessionState": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "v",
+        "type",
+        "session_id",
+        "revision",
+        "state",
+        "changed_at_ms"
+      ],
+      "properties": {
+        "v": { "$ref": "#/$defs/protocolVersion" },
+        "type": { "const": "remote.session.state" },
+        "session_id": { "$ref": "#/$defs/sessionId" },
+        "revision": { "$ref": "#/$defs/revision" },
+        "state": { "$ref": "#/$defs/sessionStateName" },
+        "changed_at_ms": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "error_code": {
+          "type": "string",
+          "maxLength": 96,
+          "pattern": "^REMOTE_[A-Z0-9_]+$"
+        }
+      }
+    },
+    "pointerMoveAbsolute": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "v",
+        "type",
+        "session_id",
+        "seq",
+        "frame_revision",
+        "monitor_id",
+        "x_norm",
+        "y_norm",
+        "client_time_ms"
+      ],
+      "properties": {
+        "v": { "$ref": "#/$defs/protocolVersion" },
+        "type": { "const": "pointer.move.absolute" },
+        "session_id": { "$ref": "#/$defs/sessionId" },
+        "seq": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "frame_revision": { "$ref": "#/$defs/revision" },
+        "monitor_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "x_norm": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "y_norm": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "client_time_ms": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "signalClientReady": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["v", "type"],
+      "properties": {
+        "v": { "$ref": "#/$defs/protocolVersion" },
+        "type": { "const": "remote.signal.client_ready" },
+        "session_id": { "$ref": "#/$defs/sessionId" },
+        "revision": { "$ref": "#/$defs/revision" },
+        "ticket": { "type": "string", "minLength": 32, "maxLength": 4096 }
+      }
+    },
+    "sessionDescription": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "sdp"],
+      "properties": {
+        "type": { "type": "string", "enum": ["offer", "answer"] },
+        "sdp": { "type": "string", "minLength": 1, "maxLength": 262144 }
+      }
+    },
+    "signalDescription": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["v", "type", "description"],
+      "properties": {
+        "v": { "$ref": "#/$defs/protocolVersion" },
+        "type": {
+          "type": "string",
+          "enum": ["remote.signal.offer", "remote.signal.answer"]
+        },
+        "session_id": { "$ref": "#/$defs/sessionId" },
+        "revision": { "$ref": "#/$defs/revision" },
+        "description": { "$ref": "#/$defs/sessionDescription" }
+      }
+    },
+    "signalIce": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["v", "type", "candidate"],
+      "properties": {
+        "v": { "$ref": "#/$defs/protocolVersion" },
+        "type": { "const": "remote.signal.ice" },
+        "session_id": { "$ref": "#/$defs/sessionId" },
+        "revision": { "$ref": "#/$defs/revision" },
+        "candidate": {
+          "type": "object",
+          "additionalProperties": true,
+          "required": ["candidate"],
+          "properties": {
+            "candidate": { "type": "string", "maxLength": 65536 },
+            "sdpMid": { "type": ["string", "null"], "maxLength": 128 },
+            "sdpMLineIndex": { "type": ["integer", "null"], "minimum": 0 },
+            "usernameFragment": { "type": ["string", "null"], "maxLength": 256 }
+          }
+        }
+      }
+    },
+    "signalPeerLeft": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["v", "type"],
+      "properties": {
+        "v": { "$ref": "#/$defs/protocolVersion" },
+        "type": { "const": "remote.signal.peer_left" },
+        "session_id": { "$ref": "#/$defs/sessionId" },
+        "revision": { "$ref": "#/$defs/revision" }
+      }
+    }
+  }
+}

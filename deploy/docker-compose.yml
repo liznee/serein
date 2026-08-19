@@ -1,0 +1,40 @@
+services:
+  ntfy:
+    image: binwiederhier/ntfy:latest
+    command: serve
+    ports:
+      - "127.0.0.1:8090:80"
+    volumes:
+      - ntfy-cache:/var/cache
+      - ./ntfy/server.docker.yml:/etc/ntfy/server.yml:ro
+    restart: unless-stopped
+
+  backend:
+    build: ../backend
+    environment:
+      - SEREIN_ENV=production
+      - SEREIN_LISTEN=:8080
+      - SEREIN_DB=/data/serein.db
+      - SEREIN_HOOK_TOKEN=${HOOK_TOKEN:?set HOOK_TOKEN in deploy/.env}
+      - SEREIN_PAIR_CODE=${PAIR_CODE:?set PAIR_CODE in deploy/.env}
+      - SEREIN_NTFY_URL=http://ntfy:80
+      - SEREIN_NTFY_TOPIC=${NTFY_TOPIC:?set a random NTFY_TOPIC in deploy/.env}
+      - SEREIN_APPROVAL_TIMEOUT=${APPROVAL_TIMEOUT:-300}
+      - SEREIN_PUBLIC_URL=${PUBLIC_URL:-}
+      - SEREIN_GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID:-}
+      - SEREIN_GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET:-}
+      - SEREIN_GITEE_CLIENT_ID=${GITEE_CLIENT_ID:-}
+      - SEREIN_GITEE_CLIENT_SECRET=${GITEE_CLIENT_SECRET:-}
+      - SEREIN_HUAWEI_PUSH_CLIENT_ID=${HUAWEI_PUSH_CLIENT_ID:-}
+      - SEREIN_HUAWEI_PUSH_CLIENT_SECRET=${HUAWEI_PUSH_CLIENT_SECRET:-}
+    volumes:
+      - backend-data:/data
+    ports:
+      - "127.0.0.1:8080:8080"
+    depends_on:
+      - ntfy
+    restart: unless-stopped
+
+volumes:
+  ntfy-cache:
+  backend-data:

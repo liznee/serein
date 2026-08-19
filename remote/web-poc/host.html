@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Serein WebRTC Host Lab</title>
+  <style>
+    :root { color-scheme: dark; --bg:#0b0e12; --card:#161b22; --line:rgba(140,144,159,.18); --text:#e1e2e8; --muted:#8c909f; --coral:#d97757; }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; padding:32px; background:radial-gradient(circle at 20% 0,rgba(217,119,87,.13),transparent 34%),var(--bg); color:var(--text); font-family:system-ui,sans-serif; }
+    main { max-width:1000px; margin:auto; display:grid; grid-template-columns:minmax(0,1fr) 320px; gap:20px; }
+    .panel { background:rgba(22,27,34,.94); border:1px solid var(--line); border-radius:20px; overflow:hidden; }
+    video { display:block; width:100%; aspect-ratio:16/9; object-fit:contain; background:#050608; }
+    .body { padding:20px; }
+    .eyebrow { color:#c89a89; font:600 11px ui-monospace,monospace; letter-spacing:.12em; }
+    h1 { margin:8px 0; font-size:25px; }
+    p { color:var(--muted); font-size:13px; line-height:1.6; }
+    button { width:100%; height:44px; margin-top:10px; border-radius:12px; border:1px solid rgba(217,119,87,.28); background:rgba(217,119,87,.08); color:var(--coral); font-weight:650; cursor:pointer; }
+    button.primary { background:var(--coral); color:#111418; }
+    .status { display:flex; gap:9px; align-items:center; margin:16px 0; color:var(--muted); font-size:12px; }
+    .dot { width:8px; height:8px; border-radius:50%; background:#b9a082; }
+    .dot.ok { background:#9eb6a4; }
+    dl { display:grid; grid-template-columns:90px 1fr; gap:9px; margin:18px 0 0; font-size:11px; }
+    dt { color:var(--muted); } dd { margin:0; overflow-wrap:anywhere; }
+    canvas { display:none; }
+    @media(max-width:780px){ body{padding:16px} main{grid-template-columns:1fr} }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="panel"><video id="preview" autoplay muted playsinline></video></section>
+    <aside class="panel body">
+      <div class="eyebrow">STAGE 0 · LOCAL LAB</div>
+      <h1>Windows 发送端</h1>
+      <p>默认发送程序生成的动画测试图，不读取桌面。只有点击“共享桌面”并在浏览器确认后才会切换。</p>
+      <div class="status"><span class="dot" id="dot"></span><span id="status">正在启动测试图…</span></div>
+      <button class="primary" id="synthetic">使用动画测试图</button>
+      <button id="screen">共享桌面（需要确认）</button>
+      <dl><dt>视频来源</dt><dd id="source">合成动画</dd><dt>Codec 偏好</dt><dd id="codec">检测中</dd><dt>DataChannel</dt><dd id="data">未连接</dd></dl>
+    </aside>
+  </main>
+  <canvas id="canvas" width="1280" height="720"></canvas>
+  <script>
+    (function () {
+      'use strict';
+      var room = new URL(location.href).searchParams.get('room') || '';
+      var signalUrl = (location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/signal?room=' + encodeURIComponent(room) + '&role=host';
+      var socket = null, peer = null, sender = null, stream = null, animation = 0, pingTimer = 0, pingAt = 0, pendingCandidates = [];
+      var preview = document.getElementById('preview'), status = document.getElementById('status'), dot = document.getElementById('dot');
+
+      function setStatus(text, ok) { status.textContent = text; dot.className = 'dot' + (ok ? ' ok' : ''); }
+      function send(message) { if (socket && socket.readyState === WebSocket.OPEN) socket.send(JSON.stringify(message)); }
+      function stopStream() { if (stream) stream.getTracks().forEach(function (track) { track.stop(); }); stream = null; if (animation) cancelAnimationFrame(animation); animation = 0; }
+
+      function syntheticStream() {
+        stopStream();
+        var canvas = document.getElementById('canvas'), context = canvas.getContext('2d'), started = performance.now();
+        function draw(now) {
+          var t = (now - started) / 1000;
+          var gradient = context.createLinearGradient(0, 0, canvas.width, canvas.height);
+          gradient.addColorStop(0, '#11161c'); gradient.addColorStop(1, '#3a201a');
+          context.fillStyle = gradient; context.fillRect(0, 0, canvas.width, canvas.height);
+          context.fillStyle = '#d97757'; context.beginPath(); context.arc(220 + Math.sin(t) * 90, 210, 74, 0, Math.PI * 2); context.fill();
+          context.fillStyle = '#e1e2e8'; context.font = '700 54px system-ui'; context.fillText('Serein Remote Lab', 350, 330);
+          context.fillStyle = '#8c909f'; context.font = '28px ui-monospace'; context.fillText(new Date().toLocaleTimeString(), 350, 382);
+          animation = requestAnimationFrame(draw);
+        }
+        draw(performance.now());
+        return canvas.captureStream(15);
+      }
+
+      function preferH264(transceiver) {
+        var capabilities = window.RTCRtpSender && RTCRtpSender.getCapabilities ? RTCRtpSender.getCapabilities('video') : null;
+        var codecs = capabilities && capabilities.codecs ? capabilities.codecs.slice() : [];
+        var h264 = codecs.filter(function (codec) { return String(codec.mimeType).toLowerCase() === 'video/h264'; });
+        document.getElementById('codec').textContent = h264.length ? 'H.264 优先' : '浏览器自动选择';
+        if (h264.length && transceiver.setCodecPreferences) transceiver.setCodecPreferences(h264.concat(codecs.filter(function (codec) { return h264.indexOf(codec) < 0; })));
+      }
+
+      async function useStream(next, label) {
+        var old = stream; stream = next; preview.srcObject = stream; document.getElementById('source').textContent = label;
+        if (sender) await sender.replaceTrack(stream.getVideoTracks()[0]);
+        if (old && old !== stream) old.getTracks().forEach(function (track) { track.stop(); });
+      }
+
+      async function createPeer() {
+        if (peer) peer.close();
+        pendingCandidates = [];
+        peer = new RTCPeerConnection({ iceServers: [] });
+        peer.onicecandidate = function (event) { if (event.candidate) send({ v:1, type:'remote.signal.ice', candidate:event.candidate }); };
+        peer.onconnectionstatechange = function () { setStatus('WebRTC：' + peer.connectionState, peer.connectionState === 'connected'); };
+        var transceiver = peer.addTransceiver(stream.getVideoTracks()[0], { direction:'sendonly', streams:[stream] });
+        sender = transceiver.sender; preferH264(transceiver);
+        var channel = peer.createDataChannel('serein-lab');
+        channel.onopen = function () { document.getElementById('data').textContent = '已连接'; pingTimer = setInterval(function () { pingAt = performance.now(); channel.send('ping'); }, 1500); };
+        channel.onmessage = function (event) { if (event.data === 'pong') document.getElementById('data').textContent = '往返 ' + Math.round(performance.now() - pingAt) + ' ms'; };
+        channel.onclose = function () { clearInterval(pingTimer); document.getElementById('data').textContent = '已断开'; };
+        var offer = await peer.createOffer(); await peer.setLocalDescription(offer); send({ v:1, type:'remote.signal.offer', description:peer.localDescription });
+      }
+
+      async function start() {
+        await useStream(syntheticStream(), '合成动画');
+        socket = new WebSocket(signalUrl);
+        socket.onopen = function () { setStatus('等待手机连接', false); };
+        socket.onmessage = async function (event) {
+          var message = JSON.parse(event.data);
+          if (message.type === 'remote.signal.client_ready') await createPeer();
+          else if (message.type === 'remote.signal.answer' && peer) {
+            await peer.setRemoteDescription(message.description);
+            while (pendingCandidates.length) await peer.addIceCandidate(pendingCandidates.shift());
+          }
+          else if (message.type === 'remote.signal.ice' && peer && message.candidate) {
+            if (peer.remoteDescription) await peer.addIceCandidate(message.candidate);
+            else pendingCandidates.push(message.candidate);
+          }
+          else if (message.type === 'remote.signal.peer_left') setStatus('手机已离开', false);
+        };
+        socket.onclose = function () { setStatus('信令已断开', false); };
+      }
+
+      document.getElementById('synthetic').onclick = async function () { await useStream(syntheticStream(), '合成动画'); };
+      document.getElementById('screen').onclick = async function () {
+        try { await useStream(await navigator.mediaDevices.getDisplayMedia({ video:{ frameRate:15 }, audio:false }), '用户授权的桌面'); }
+        catch (error) { setStatus('未共享桌面：' + error.message, false); }
+      };
+      addEventListener('beforeunload', function () { stopStream(); if (peer) peer.close(); if (socket) socket.close(); });
+      start().catch(function (error) { setStatus('启动失败：' + error.message, false); });
+    }());
+  </script>
+</body>
+</html>

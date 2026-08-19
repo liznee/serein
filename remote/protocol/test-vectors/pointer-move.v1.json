@@ -1,0 +1,11 @@
+{
+  "v": 1,
+  "type": "pointer.move.absolute",
+  "session_id": "remote-session-0001",
+  "seq": 9123,
+  "frame_revision": 27,
+  "monitor_id": "display-1",
+  "x_norm": 0.3812,
+  "y_norm": 0.6621,
+  "client_time_ms": 0
+}

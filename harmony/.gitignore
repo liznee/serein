@@ -1,0 +1,21 @@
+# DevEco Studio 构建产物
+/build/
+/entry/build/
+/.hvigor/
+
+# 依赖
+/node_modules/
+/entry/node_modules/
+
+# IDE
+.idea/
+*.iml
+
+# 本地配置
+local.properties
+
+# 签名文件
+*.p12
+*.p7b
+*.csr
+*.cer

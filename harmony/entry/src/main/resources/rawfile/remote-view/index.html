@@ -1,0 +1,701 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; media-src blob:; connect-src 'none'; img-src data:">
+  <meta name="referrer" content="no-referrer">
+  <title>Serein Remote View</title>
+  <style>
+    :root { color-scheme: dark; --bg:#090c10; --text:#e1e2e8; --muted:#8c909f; --coral:#d97757; }
+    * { box-sizing:border-box; }
+    html,body { width:100%; height:100%; margin:0; overflow:hidden; background:var(--bg); color:var(--text); font-family:system-ui,sans-serif; user-select:none; -webkit-user-select:none; touch-action:none; }
+    main { position:relative; width:100%; height:100%; display:flex; flex-direction:column; }
+    .video-wrap { position:relative; flex:1; display:flex; align-items:center; justify-content:center; overflow:hidden; }
+    .video-inner { position:relative; width:100%; height:100%; transform-origin:center center; }
+    video { width:100%; height:100%; object-fit:contain; background:#050608; touch-action:none; }
+    .waiting { display:flex; flex-direction:column; align-items:center; gap:10px; color:var(--muted); font-size:12px; position:absolute; z-index:10; }
+    .waiting.hidden { display:none; }
+    .dot { width:18px; height:18px; border:2px solid rgba(217,119,87,.18); border-top-color:var(--coral); border-radius:50%; animation:spin .8s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .toolbar { display:flex; flex:0 0 38px; min-height:38px; flex-direction:row; align-items:center; gap:4px; padding:4px 8px; background:#11161c; border-top:1px solid rgba(140,144,159,.14); overflow-x:auto; overflow-y:hidden; touch-action:pan-x; scrollbar-width:none; }
+    .toolbar.visible { display:flex; }
+    .toolbar input { flex:1; height:30px; border:1px solid rgba(140,144,159,.2); border-radius:6px; background:#0b0e12; color:var(--text); padding:0 8px; font-size:14px; outline:none; touch-action:auto; }
+    .toolbar button { height:30px; min-width:30px; padding:0 8px; border:1px solid rgba(140,144,159,.2); border-radius:6px; background:transparent; color:var(--muted); font-size:11px; cursor:pointer; white-space:nowrap; }
+    .toolbar button:active { background:rgba(217,119,87,.12); color:var(--coral); }
+    .toolbar .spacer { display:none; }
+    .zoom-badge { font-size:10px; color:var(--muted); padding:0 4px; min-width:32px; text-align:center; }
+    /* Keep the session controls visible first; the less frequent key helpers
+       remain reachable by horizontally scrolling this compact bottom bar. */
+    #fullscreenBtn { order:-4; }
+    #keyboardBtn { order:-3; }
+    .zoom-badge { order:-2; }
+    #zoomResetBtn { order:-1; }
+  </style>
+</head>
+<body>
+  <main id="main">
+    <div class="video-wrap" id="videoWrap">
+      <div class="video-inner" id="videoInner">
+        <video id="remoteVideo" autoplay muted playsinline></video>
+        <div class="waiting" id="waiting"><span class="dot"></span><span>等待电脑发送画面</span></div>
+      </div>
+    </div>
+    <div class="toolbar" id="toolbar">
+      <button id="fullscreenBtn" title="横屏或竖屏">横屏</button>
+      <button id="keyboardBtn" title="Keyboard">键盘</button>
+      <span class="zoom-badge" id="zoomBadge">100%</span>
+      <button id="zoomResetBtn" title="Reset Zoom">重置</button>
+      <button data-key="27" title="Esc">Esc</button>
+      <button data-key="13" title="Enter">Enter</button>
+      <button data-combo="ctrl-c" title="Copy">Ctrl+C</button>
+      <button data-combo="ctrl-v" title="Paste">Ctrl+V</button>
+      <button data-combo="ctrl-a" title="SelectAll">Ctrl+A</button>
+    </div>
+  </main>
+  <script>
+    (function () {
+      'use strict';
+      var peer = null;
+      var pendingCandidates = [];
+      var video = document.getElementById('remoteVideo');
+      var waiting = document.getElementById('waiting');
+      var toolbar = document.getElementById('toolbar');
+      var videoInner = document.getElementById('videoInner');
+      var main = document.getElementById('main');
+      var keyboardBtn = document.getElementById('keyboardBtn');
+      var zoomBadge = document.getElementById('zoomBadge');
+      var fullscreenBtn = document.getElementById('fullscreenBtn');
+      var zoomResetBtn = document.getElementById('zoomResetBtn');
+      var playingReported = false;
+      var inputChannel = null;
+      var pendingInputEvents = [];
+      var MAX_PENDING_INPUT_EVENTS = 48;
+      var textComposing = false;
+      var lastClickAt = 0;
+      var lastClickCursorX = -1, lastClickCursorY = -1;
+      var isFullscreen = false;
+      var isLandscape = false;
+
+      // ── Zoom state ──
+      var zoomLevel = 1.0;
+      var panX = 0, panY = 0;
+      var MIN_ZOOM = 1.0, MAX_ZOOM = 3.0;
+      var cursorX = 0.5, cursorY = 0.5;
+      var cursorEl = null;
+
+      function createCursor() {
+        cursorEl = document.createElement('img');
+        cursorEl.src = 'data:image/svg+xml,' + encodeURIComponent(
+          '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="28" viewBox="0 0 20 28">' +
+          '<path d="M1 1 L1 23 L6 18 L10 27 L13 26 L9 17 L17 15 Z" fill="#fff" stroke="#222" stroke-width="1.5"/>' +
+          '</svg>'
+        );
+        cursorEl.style.cssText = 'position:absolute;width:6px;height:8px;pointer-events:none;z-index:5;transition:opacity .2s;opacity:0;';
+        var videoWrap = document.getElementById('videoWrap');
+        videoWrap.appendChild(cursorEl);
+      }
+      createCursor();
+
+      function clamp(value, min, max) {
+        return Math.max(min, Math.min(max, value));
+      }
+
+      // Keep all geometry in the untransformed viewport coordinate system.
+      // Reading a transformed video rectangle here feeds an old pan back into
+      // the next calculation and eventually exposes the black background.
+      function getViewportMetrics() {
+        var wrap = document.getElementById('videoWrap').getBoundingClientRect();
+        var width = Math.max(1, wrap.width);
+        var height = Math.max(1, wrap.height);
+        var sourceWidth = video.videoWidth || width;
+        var sourceHeight = video.videoHeight || height;
+        var fit = Math.min(width / sourceWidth, height / sourceHeight);
+        var frameWidth = sourceWidth * fit;
+        var frameHeight = sourceHeight * fit;
+        return {
+          wrap: wrap,
+          width: width,
+          height: height,
+          frameLeft: (width - frameWidth) / 2,
+          frameTop: (height - frameHeight) / 2,
+          frameWidth: frameWidth,
+          frameHeight: frameHeight,
+          maxPanX: Math.max(0, (frameWidth * zoomLevel - width) / 2),
+          maxPanY: Math.max(0, (frameHeight * zoomLevel - height) / 2)
+        };
+      }
+
+      function clampPan(metrics) {
+        var m = metrics || getViewportMetrics();
+        panX = clamp(panX, -m.maxPanX, m.maxPanX);
+        panY = clamp(panY, -m.maxPanY, m.maxPanY);
+      }
+
+      function applyZoom() {
+        clampPan();
+        videoInner.style.transform = 'translate(' + panX + 'px,' + panY + 'px) scale(' + zoomLevel + ')';
+        zoomBadge.textContent = Math.round(zoomLevel * 100) + '%';
+        updateCursor();
+      }
+
+      function resetZoom() {
+        zoomLevel = 1.0; panX = 0; panY = 0;
+        applyZoom();
+      }
+
+      // Retained only for binary-compatible source updates. No code calls this
+      // legacy implementation; all active paths use clampPan(metrics) above.
+      function legacyTransformClamp() {
+        return;
+        /*
+        // Prevent black bars: if cursor is off-screen (past edge),
+        // push viewport back so desktop edge aligns with screen edge.
+        var wrapR = videoInner.parentElement.getBoundingClientRect();
+        var cy = wrapR.top + wrapR.height / 2;
+        // Check raw (unclamped) cursor position at screen edges
+        var r = getVideoDisplayRect();
+        for (var i = 0; i < 3; i++) {
+          // Screen left edge → should not map to a positon beyond desktop left (negative raw)
+          var rl = (wrapR.left + 4 - wrapR.left - panX - wrapR.width/2) / zoomLevel + wrapR.width/2;
+          rl = (rl - (r.left - wrapR.left)) / r.width; // raw desktop coord at left screen edge
+          if (rl < -0.01) { panX -= (-rl) * r.width * zoomLevel * 0.4; } // too far right, pull back
+          var rr = (wrapR.right - 4 - wrapR.left - panX - wrapR.width/2) / zoomLevel + wrapR.width/2;
+          rr = (rr - (r.left - wrapR.left)) / r.width;
+          if (rr > 1.01) { panX += (rr - 1) * r.width * zoomLevel * 0.4; } // too far left, pull back
+          applyZoom();
+        }
+        */
+      }
+
+      function post(message) {
+        if (window.sereinRemoteNative && typeof window.sereinRemoteNative.postMessage === 'function') {
+          window.sereinRemoteNative.postMessage(JSON.stringify(message));
+        }
+      }
+
+      function reportState(state) {
+        post({ v:1, type:'remote.media.state', state:String(state || 'unknown') });
+      }
+
+      function flushPendingInput() {
+        if (!inputChannel || inputChannel.readyState !== 'open') return;
+        while (pendingInputEvents.length > 0) {
+          try {
+            inputChannel.send(JSON.stringify(pendingInputEvents[0]));
+            pendingInputEvents.shift();
+          } catch (e) {
+            break;
+          }
+        }
+      }
+
+      // Pointer moves are deliberately not queued. Replaying a stale click or
+      // drag after a reconnect would be unsafe; keyboard/text events are safe to
+      // keep briefly while the input data channel finishes opening.
+      function sendInput(event, queueIfUnavailable) {
+        if (inputChannel && inputChannel.readyState === 'open') {
+          try {
+            inputChannel.send(JSON.stringify(event));
+            return true;
+          } catch (e) {}
+        }
+        if (queueIfUnavailable && pendingInputEvents.length < MAX_PENDING_INPUT_EVENTS) {
+          pendingInputEvents.push(event);
+          reportState('input_waiting');
+        }
+        return false;
+      }
+
+      function normalizeTouch(clientX, clientY) {
+        var m = getViewportMetrics();
+        var localX = clientX - m.wrap.left;
+        var localY = clientY - m.wrap.top;
+        var baseX = (localX - panX - m.width / 2) / zoomLevel + m.width / 2;
+        var baseY = (localY - panY - m.height / 2) / zoomLevel + m.height / 2;
+        var rawX = (baseX - m.frameLeft) / m.frameWidth;
+        var rawY = (baseY - m.frameTop) / m.frameHeight;
+        return { x: clamp(rawX, 0, 1), y: clamp(rawY, 0, 1), rawX: rawX, rawY: rawY };
+      }
+
+      function cursorScreenPoint(x, y) {
+        var m = getViewportMetrics();
+        var baseX = m.frameLeft + clamp(x, 0, 1) * m.frameWidth;
+        var baseY = m.frameTop + clamp(y, 0, 1) * m.frameHeight;
+        return {
+          x: (baseX - m.width / 2) * zoomLevel + m.width / 2 + panX,
+          y: (baseY - m.height / 2) * zoomLevel + m.height / 2 + panY,
+          metrics: m
+        };
+      }
+
+      // Return the pan needed to keep a desktop coordinate exactly at one
+      // visible viewport edge. This is the key distinction between the
+      // desktop's edge and the phone's visible edge.
+      function panForCursorAtEdge(x, edge, metrics) {
+        var m = metrics || getViewportMetrics();
+        var baseX = m.frameLeft + clamp(x, 0, 1) * m.frameWidth;
+        var transformedX = (baseX - m.width / 2) * zoomLevel + m.width / 2;
+        return clamp((edge === 'left' ? 0 : m.width) - transformedX, -m.maxPanX, m.maxPanX);
+      }
+
+      function panForCursorAtVerticalEdge(y, edge, metrics) {
+        var m = metrics || getViewportMetrics();
+        var baseY = m.frameTop + clamp(y, 0, 1) * m.frameHeight;
+        var transformedY = (baseY - m.height / 2) * zoomLevel + m.height / 2;
+        return clamp((edge === 'top' ? 0 : m.height) - transformedY, -m.maxPanY, m.maxPanY);
+      }
+
+      function setZoomAt(clientX, clientY, newZoom) {
+        var before = getViewportMetrics();
+        var localX = clientX - before.wrap.left;
+        var localY = clientY - before.wrap.top;
+        var baseX = (localX - panX - before.width / 2) / zoomLevel + before.width / 2;
+        var baseY = (localY - panY - before.height / 2) / zoomLevel + before.height / 2;
+        zoomLevel = clamp(newZoom, MIN_ZOOM, MAX_ZOOM);
+        var after = getViewportMetrics();
+        panX = localX - ((baseX - after.width / 2) * zoomLevel + after.width / 2);
+        panY = localY - ((baseY - after.height / 2) * zoomLevel + after.height / 2);
+        applyZoom();
+      }
+
+      function updateCursor() {
+        if (!cursorEl) return;
+        var point = cursorScreenPoint(cursorX, cursorY);
+        // The remote position may be exactly on a viewport edge. Keeping the
+        // cursor element's left edge at `width` makes it disappear under the
+        // clipped wrapper on the right, while the left edge remains visible.
+        // Clamp the visual glyph itself, not the remote coordinate or pan.
+        var cursorWidth = cursorEl.offsetWidth || 6;
+        var cursorHeight = cursorEl.offsetHeight || 8;
+        var sx = clamp(point.x, 0, Math.max(0, point.metrics.width - cursorWidth));
+        var sy = clamp(point.y, 0, Math.max(0, point.metrics.height - cursorHeight));
+        cursorEl.style.left = sx + 'px';
+        cursorEl.style.top = sy + 'px';
+        cursorEl.style.opacity = '1';
+        clearTimeout(cursorEl._hideTimer);
+        cursorEl._hideTimer = setTimeout(function () { if (cursorEl) cursorEl.style.opacity = '0'; }, 2000);
+      }
+
+      function moveCursor(x, y) {
+        cursorX = Math.max(0, Math.min(1, x));
+        cursorY = Math.max(0, Math.min(1, y));
+        updateCursor();
+      }
+
+      video.addEventListener('loadedmetadata', function () { applyZoom(); });
+      window.addEventListener('resize', function () { applyZoom(); });
+
+      // ── Touch state ──
+      var touchState = {
+        id: -1, startX: 0, startY: 0, lastX: 0, lastY: 0,
+        startTime: 0, moved: false, dragging: false,
+        startCx: 0.5, startCy: 0.5, startNx: 0.5, startNy: 0.5,
+        mode: 'none', panEdge: '', edgeLock: '', edgeAnchorPan: 0, edgeAnchorPanY: 0,
+        pinchStartDist: 0, pinchStartZoom: 1,
+        scrollLastY: 0
+      };
+
+      function dist(t1, t2) {
+        var dx = t1.clientX - t2.clientX, dy = t1.clientY - t2.clientY;
+        return Math.sqrt(dx*dx + dy*dy);
+      }
+
+      function beginSingleTouch(t) {
+        touchState.id = t.identifier;
+        touchState.startX = t.clientX;
+        touchState.startY = t.clientY;
+        touchState.lastX = t.clientX;
+        touchState.lastY = t.clientY;
+        touchState.startTime = Date.now();
+        touchState.moved = false;
+        touchState.dragging = false;
+        touchState.mode = 'single';
+        touchState.panEdge = '';
+        touchState.edgeLock = '';
+        touchState.edgeAnchorPan = panX;
+        touchState.edgeAnchorPanY = panY;
+        // Pointer movement is calculated incrementally below. Do not anchor it
+        // to the first touch point: after the viewport has followed the cursor
+        // at an edge, that old coordinate is no longer in the same geometry.
+        touchState.startCx = cursorX;
+        touchState.startCy = cursorY;
+      }
+
+      // Toolbar: prevent taps from reaching video
+      toolbar.addEventListener('touchstart', function (e) { e.stopPropagation(); });
+      toolbar.addEventListener('touchmove', function (e) { e.stopPropagation(); });
+      toolbar.addEventListener('touchend', function (e) { e.stopPropagation(); });
+
+      video.addEventListener('touchstart', function (e) {
+        e.preventDefault(); e.stopPropagation();
+        if (e.touches.length === 1) {
+          beginSingleTouch(e.touches[0]);
+          updateCursor();
+        } else if (e.touches.length === 2) {
+          touchState.mode = 'pinch';
+          touchState.pinchStartDist = dist(e.touches[0], e.touches[1]);
+          touchState.pinchStartZoom = zoomLevel;
+          var midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+          touchState.scrollLastY = midY;
+        }
+      }, { passive: false });
+
+      video.addEventListener('touchmove', function (e) {
+        e.preventDefault();
+        var ae = document.activeElement; if (!ae || (ae.tagName !== "INPUT" && ae.tagName !== "TEXTAREA")) { window.getSelection().removeAllRanges(); }
+
+        if (touchState.mode === 'single' && e.touches.length === 1) {
+          var t = e.touches[0];
+          if (t.identifier !== touchState.id) return;
+          var pdx = t.clientX - touchState.lastX;
+          var pdy = t.clientY - touchState.lastY;
+          var m = getViewportMetrics();
+          var desktopWidth = Math.max(1, m.frameWidth * zoomLevel);
+          var desktopHeight = Math.max(1, m.frameHeight * zoomLevel);
+          var remainingX = pdx;
+          var remainingY = pdy;
+          var panChanged = false;
+          var currentPoint = cursorScreenPoint(cursorX, cursorY);
+          var edgeThreshold = 6;
+
+          // Start following at the *visible* edge, not after the remote mouse
+          // has reached the desktop's absolute edge. While locked, the image
+          // moves by the same amount as the remote pointer so it remains under
+          // the user's finger at the matching visible edge of the phone screen.
+          if (!touchState.edgeLock) {
+            if (currentPoint.x <= edgeThreshold && remainingX < 0 && m.maxPanX > 0) {
+              touchState.edgeLock = 'left';
+              touchState.edgeAnchorPan = panX;
+            } else if (currentPoint.x >= m.width - edgeThreshold && remainingX > 0 && m.maxPanX > 0) {
+              touchState.edgeLock = 'right';
+              touchState.edgeAnchorPan = panX;
+            } else if (currentPoint.y <= edgeThreshold && remainingY < 0 && m.maxPanY > 0) {
+              touchState.edgeLock = 'top';
+              touchState.edgeAnchorPanY = panY;
+            } else if (currentPoint.y >= m.height - edgeThreshold && remainingY > 0 && m.maxPanY > 0) {
+              touchState.edgeLock = 'bottom';
+              touchState.edgeAnchorPanY = panY;
+            }
+          }
+
+          if (touchState.edgeLock === 'left') {
+            // A rightward reversal first unwinds only the camera movement
+            // created by this edge-follow. The remaining distance then moves
+            // the pointer normally, so the gesture never develops a dead zone.
+            if (remainingX > 0) {
+              var leftUnwind = Math.min(remainingX, Math.max(0, panX - touchState.edgeAnchorPan));
+              cursorX = clamp(cursorX + leftUnwind / desktopWidth, 0, 1);
+              panX -= leftUnwind;
+              remainingX -= leftUnwind;
+              panChanged = leftUnwind > 0;
+              if (panX <= touchState.edgeAnchorPan + 0.2) touchState.edgeLock = '';
+            } else {
+              cursorX = clamp(cursorX + remainingX / desktopWidth, 0, 1);
+              panX = panForCursorAtEdge(cursorX, 'left', m);
+              panChanged = true;
+              remainingX = 0;
+            }
+          } else if (touchState.edgeLock === 'right') {
+            if (remainingX < 0) {
+              var rightUnwind = Math.min(-remainingX, Math.max(0, touchState.edgeAnchorPan - panX));
+              cursorX = clamp(cursorX - rightUnwind / desktopWidth, 0, 1);
+              panX += rightUnwind;
+              remainingX += rightUnwind;
+              panChanged = rightUnwind > 0;
+              if (panX >= touchState.edgeAnchorPan - 0.2) touchState.edgeLock = '';
+            } else {
+              cursorX = clamp(cursorX + remainingX / desktopWidth, 0, 1);
+              panX = panForCursorAtEdge(cursorX, 'right', m);
+              panChanged = true;
+              remainingX = 0;
+            }
+          } else if (touchState.edgeLock === 'top') {
+            if (remainingY > 0) {
+              var topUnwind = Math.min(remainingY, Math.max(0, panY - touchState.edgeAnchorPanY));
+              cursorY = clamp(cursorY + topUnwind / desktopHeight, 0, 1);
+              panY -= topUnwind;
+              remainingY -= topUnwind;
+              panChanged = topUnwind > 0;
+              if (panY <= touchState.edgeAnchorPanY + 0.2) touchState.edgeLock = '';
+            } else {
+              cursorY = clamp(cursorY + remainingY / desktopHeight, 0, 1);
+              panY = panForCursorAtVerticalEdge(cursorY, 'top', m);
+              panChanged = true;
+              remainingY = 0;
+            }
+          } else if (touchState.edgeLock === 'bottom') {
+            if (remainingY < 0) {
+              var bottomUnwind = Math.min(-remainingY, Math.max(0, touchState.edgeAnchorPanY - panY));
+              cursorY = clamp(cursorY - bottomUnwind / desktopHeight, 0, 1);
+              panY += bottomUnwind;
+              remainingY += bottomUnwind;
+              panChanged = bottomUnwind > 0;
+              if (panY >= touchState.edgeAnchorPanY - 0.2) touchState.edgeLock = '';
+            } else {
+              cursorY = clamp(cursorY + remainingY / desktopHeight, 0, 1);
+              panY = panForCursorAtVerticalEdge(cursorY, 'bottom', m);
+              panChanged = true;
+              remainingY = 0;
+            }
+          }
+
+          // Locking one axis must not freeze ordinary movement on the other.
+          if (touchState.edgeLock !== 'left' && touchState.edgeLock !== 'right' && Math.abs(remainingX) > 0) {
+            cursorX = clamp(cursorX + remainingX / desktopWidth, 0, 1);
+          }
+          if (touchState.edgeLock !== 'top' && touchState.edgeLock !== 'bottom' && Math.abs(remainingY) > 0) {
+            cursorY = clamp(cursorY + remainingY / desktopHeight, 0, 1);
+          }
+          if (panChanged) applyZoom();
+          moveCursor(cursorX, cursorY);
+          if (Math.abs(pdx) + Math.abs(pdy) > 0.2) {
+            sendInput({ t:'pm', x:cursorX, y:cursorY });
+          }
+          touchState.lastX = t.clientX;
+          touchState.lastY = t.clientY;
+          touchState.moved = true;
+
+        } else if ((touchState.mode === 'pinch' || touchState.mode === 'scroll') && e.touches.length === 2) {
+          var d = dist(e.touches[0], e.touches[1]);
+          var midY = (e.touches[0].clientY + e.touches[1].clientY) / 2;
+          var dDelta = d - touchState.pinchStartDist;
+
+          if (Math.abs(dDelta) > 10) {
+            var midX = (e.touches[0].clientX + e.touches[1].clientX) / 2;
+            var midPos = normalizeTouch(midX, midY);
+            cursorX = midPos.x;
+            cursorY = midPos.y;
+            var scale = d / touchState.pinchStartDist;
+            var newZoom = touchState.pinchStartZoom * scale;
+            setZoomAt(midX, midY, newZoom);
+            moveCursor(cursorX, cursorY);
+            window.getSelection().removeAllRanges();
+            touchState.mode = 'pinch';
+          } else {
+            var scrollDelta = midY - touchState.scrollLastY;
+            if (Math.abs(scrollDelta) > 2) {
+              var pos = normalizeTouch(
+                (e.touches[0].clientX + e.touches[1].clientX) / 2,
+                (e.touches[0].clientY + e.touches[1].clientY) / 2
+              );
+              sendInput({ t:'ps', d: scrollDelta > 0 ? 1 : -1, x:pos.x, y:pos.y });
+              touchState.scrollLastY = midY;
+              touchState.mode = 'scroll';
+            }
+          }
+        }
+      }, { passive: false });
+
+      video.addEventListener('touchend', function (e) {
+        e.preventDefault();
+        if (e.changedTouches.length === 1 && touchState.mode === 'single') {
+          var t = e.changedTouches[0];
+          if (t.identifier === touchState.id) {
+            var duration = Date.now() - touchState.startTime;
+            var movedDist = Math.abs(t.clientX - touchState.startX) + Math.abs(t.clientY - touchState.startY);
+
+            if (touchState.dragging) {
+              moveCursor(cursorX, cursorY);
+            } else if (duration < 400 && movedDist < 10) {
+              // Swiping moves the remote cursor. A later short tap is a click
+              // at that cursor's current position, not at the finger's new
+              // location, so it is safe to tap in empty screen space after
+              // moving onto a small input field.
+              sendInput({ t:'pd', b:'left', x:cursorX, y:cursorY });
+              sendInput({ t:'pu', b:'left' });
+              var now = Date.now();
+              var sameCursor = Math.abs(cursorX - lastClickCursorX) < 0.002 &&
+                Math.abs(cursorY - lastClickCursorY) < 0.002;
+              // Some Chromium-based apps do not expose their caret to Win32.
+              // A deliberate second click at the unchanged cursor is the
+              // reliable, non-intrusive fallback for a text field.
+              if (sameCursor && now - lastClickAt < 2000) {
+                post({ v:1, type:'remote.media.state', state:'keyboard' });
+              }
+              lastClickAt = now;
+              lastClickCursorX = cursorX;
+              lastClickCursorY = cursorY;
+            } else if (duration > 500 && movedDist < 10) {
+              sendInput({ t:'pd', b:'right', x:cursorX, y:cursorY });
+              sendInput({ t:'pu', b:'right' });
+            }
+            touchState.id = -1;
+            touchState.mode = 'none';
+            touchState.panEdge = '';
+            touchState.edgeLock = '';
+            touchState.dragging = false;
+          }
+        } else if (e.touches.length < 2) {
+          if (touchState.mode === 'pinch' || touchState.mode === 'scroll') {
+            if (e.touches.length === 1) {
+              beginSingleTouch(e.touches[0]);
+            } else {
+              touchState.mode = 'none';
+              touchState.dragging = false;
+            }
+          }
+        }
+      }, { passive: false });
+
+      video.addEventListener('touchcancel', function (e) {
+        e.preventDefault();
+        if (touchState.dragging) sendInput({ t:'pu', b:'left' });
+        touchState.id = -1;
+        touchState.mode = 'none';
+        touchState.panEdge = '';
+        touchState.edgeLock = '';
+        touchState.dragging = false;
+      }, { passive: false });
+
+      // ── Keyboard input ──
+      function sendKey(vk, down) { sendInput({ t: down ? 'kd' : 'ku', c: vk }, true); }
+      function sendKeyPress(vk, count) {
+        var repeats = Math.max(1, Math.min(parseInt(count || 1, 10) || 1, 256));
+        for (var i = 0; i < repeats; i++) { sendKey(vk, true); sendKey(vk, false); }
+      }
+      function sendCombo(combo) {
+        var parts = combo.split('-');
+        var keys = { 'ctrl': 0x11, 'alt': 0x12, 'shift': 0x10, 'win': 0x5B };
+        for (var i = 0; i < parts.length - 1; i++) {
+          var vk = keys[parts[i]];
+          if (vk) sendKey(vk, true);
+        }
+        var last = parts[parts.length - 1];
+        var lastVk = last.length === 1 ? last.toUpperCase().charCodeAt(0) : (keys[last] || 0);
+        if (lastVk) { sendKey(lastVk, true); sendKey(lastVk, false); }
+        for (var i = parts.length - 2; i >= 0; i--) {
+          var vk = keys[parts[i]];
+          if (vk) sendKey(vk, false);
+        }
+      }
+
+      var ctrlButtons = document.querySelectorAll('.toolbar button[data-key], .toolbar button[data-combo]');
+      for (var i = 0; i < ctrlButtons.length; i++) {
+        (function (btn) {
+          btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            if (btn.dataset.key) sendKeyPress(parseInt(btn.dataset.key, 10));
+            else if (btn.dataset.combo) sendCombo(btn.dataset.combo);
+          });
+        })(ctrlButtons[i]);
+      }
+
+      function sendRemoteText(text) {
+        if (text.length > 0) {
+          // The native injector accepts Unicode text. Keep the field intact if
+          // its bounded queue is full, so typing never disappears silently.
+          return sendInput({ t:'kt', s:text.slice(0, 8192) }, true);
+        }
+        return false;
+      }
+      keyboardBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        post({ v:1, type:'remote.media.state', state:'keyboard' });
+      });
+
+      // ── Zoom / Fullscreen / Rotate controls ──
+      zoomResetBtn.addEventListener('click', function () { resetZoom(); });
+      fullscreenBtn.addEventListener('click', function () {
+        isFullscreen = !isFullscreen;
+        // Remote desktop uses two simple modes: portrait half-screen or
+        // landscape full-screen. There is no separate rotate step to perform.
+        isLandscape = isFullscreen;
+        fullscreenBtn.textContent = isFullscreen ? '竖屏' : '横屏';
+        post({ v:1, type:'remote.media.state', state: isLandscape ? 'landscape' : 'portrait' });
+        post({ v:1, type:'remote.media.state', state: isFullscreen ? 'fullscreen' : 'windowed' });
+        setTimeout(function () { applyZoom(); }, 350);
+      });
+
+      // ── WebRTC ──
+      function ensurePeer() {
+        if (peer) return peer;
+        peer = new RTCPeerConnection({ iceServers: [] });
+        peer.onicecandidate = function (event) {
+          if (event.candidate) post({ v:1, type:'remote.signal.ice', candidate:event.candidate.toJSON ? event.candidate.toJSON() : event.candidate });
+        };
+        peer.ontrack = function (event) {
+          if (!event.streams || !event.streams[0]) return;
+          video.srcObject = event.streams[0];
+          video.play().catch(function () {});
+          reportState('track_received');
+        };
+        peer.onconnectionstatechange = function () { reportState(peer ? peer.connectionState : 'closed'); };
+        peer.ondatachannel = function (event) {
+          inputChannel = event.channel;
+          inputChannel.onopen = function () {
+            flushPendingInput();
+            post({ v:1, type:'remote.media.state', state:'input_ready' });
+          };
+          inputChannel.onmessage = function (event) {
+            try {
+              var status = JSON.parse(event.data);
+              if (status && status.t === 'focus' && status.input === true) {
+                post({ v:1, type:'remote.media.state', state:'keyboard' });
+              }
+            } catch (e) {}
+          };
+          inputChannel.onclose = function () { inputChannel = null; };
+          inputChannel.onerror = function () {};
+        };
+        return peer;
+      }
+
+      function resetPeer() {
+        pendingCandidates = [];
+        pendingInputEvents = [];
+        if (inputChannel) { try { inputChannel.close(); } catch (e) {} inputChannel = null; }
+        if (peer) { peer.close(); peer = null; }
+        if (video.srcObject) video.srcObject.getTracks().forEach(function (track) { track.stop(); });
+        video.srcObject = null;
+        waiting.className = 'waiting';
+        toolbar.className = 'toolbar';
+        playingReported = false;
+        resetZoom();
+      }
+
+      async function receive(raw) {
+        var message = typeof raw === 'string' ? JSON.parse(raw) : raw;
+        if (!message || message.v !== 1) return;
+        var current = ensurePeer();
+        if (message.type === 'remote.signal.offer' && message.description && message.description.type === 'offer') {
+          await current.setRemoteDescription(message.description);
+          while (pendingCandidates.length) await current.addIceCandidate(pendingCandidates.shift());
+          var answer = await current.createAnswer();
+          await current.setLocalDescription(answer);
+          post({ v:1, type:'remote.signal.answer', description:current.localDescription });
+        } else if (message.type === 'remote.signal.ice' && message.candidate) {
+          if (current.remoteDescription) await current.addIceCandidate(message.candidate);
+          else if (pendingCandidates.length < 128) pendingCandidates.push(message.candidate);
+        } else if (message.type === 'remote.signal.peer_left') {
+          resetPeer();
+          reportState('peer_left');
+        }
+      }
+
+      function close() { resetPeer(); }
+
+      window.sereinRemote = {
+        receive:receive,
+        close:close,
+        sendText:sendRemoteText,
+        sendKeyPress:sendKeyPress
+      };
+      video.onplaying = function () {
+        waiting.className = 'waiting hidden';
+        toolbar.className = 'toolbar visible';
+        if (!playingReported) { playingReported = true; reportState('playing'); }
+      };
+      setTimeout(function () {
+        if (waiting.className.indexOf('hidden') < 0 && video.srcObject) {
+          waiting.className = 'waiting hidden';
+          toolbar.className = 'toolbar visible';
+          if (!playingReported) { playingReported = true; reportState('playing'); }
+        }
+      }, 5000);
+      addEventListener('beforeunload', close);
+      post({ v:1, type:'remote.media.ready' });
+    }());
+  </script>
+</body>
+</html>

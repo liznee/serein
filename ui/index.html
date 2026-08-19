@@ -1,0 +1,782 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#160d0e" />
+    <meta
+      name="description"
+      content="Serein：面向 HarmonyOS 的开源自托管 Agent 工作台，把本地 Claude Code 与 Codex 带到掌心。"
+    />
+    <meta property="og:title" content="Serein — 让本地 Agent 有腿" />
+    <meta
+      property="og:description"
+      content="终端与审批是稳定核心；远程桌面、社区和 Codex Desktop 实验能力同样开放源码。"
+    />
+    <meta property="og:image" content="assets/og.png" />
+    <link rel="icon" type="image/png" href="assets/serein-mark.png" />
+    <title>Serein — 让本地 Agent 有腿</title>
+    <link rel="stylesheet" href="landing.css?v=20260801-text-carousel" />
+    <link rel="stylesheet" href="pet-stories.css?v=20260801-approval-left-upper" />
+  </head>
+  <body>
+    <canvas class="ascii-rain" aria-hidden="true"></canvas>
+    <div class="page-noise" aria-hidden="true"></div>
+    <div class="ambient ambient-one" aria-hidden="true"></div>
+    <div class="ambient ambient-two" aria-hidden="true"></div>
+    <header class="site-header shell" id="top">
+      <a class="brand" href="#top" aria-label="Serein 首页">
+        <img class="brand-mark" src="assets/serein-mark.png" alt="" />
+        <span>Serein</span>
+      </a>
+      <nav class="nav-links" aria-label="主导航">
+        <a href="#flow" data-zh="工作流程" data-en="Workflow">工作流程</a>
+        <a href="#features" data-zh="核心能力" data-en="Capabilities"
+          >核心能力</a
+        >
+        <a href="#self-host" data-zh="开源部署" data-en="Open source">开源部署</a>
+      </nav>
+      <div class="header-actions">
+        <button class="language-toggle" type="button" aria-label="切换至英文">
+          EN
+        </button>
+        <a
+          class="header-github"
+          href="#self-host"
+          data-zh="查看项目"
+          data-en="Explore project"
+          >查看项目 <span>↗</span></a
+        >
+      </div>
+    </header>
+
+    <main>
+      <section class="hero shell" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <p class="eyebrow">
+            <span></span><b>SEREIN / PERSONAL AGENT WORKSPACE</b
+            ><em
+              data-zh="鸿蒙原生 · 本地优先 · 自托管"
+              data-en="HarmonyOS native · Local-first · Self-hosted"
+              >鸿蒙原生 · 本地优先 · 自托管</em
+            >
+          </p>
+          <h1
+            id="hero-title"
+            data-zh="让本地 Agent 有腿，<br><i>但关键时刻还会问你。</i>"
+            data-en="Give your local Agent legs,<br><i>keep the final call yours.</i>"
+          >
+            让本地 Agent 有腿，<br /><i>但关键时刻还会问你。</i>
+          </h1>
+          <p
+            class="hero-lede"
+            data-zh="Serein 是面向 HarmonyOS 的本地 Agent 工作台：在手机上继续 Claude Code 与 Codex 会话，处理风险审批、项目状态和外部 Issue。代码与会话保留在自己的电脑和自托管服务中；远程桌面、社区协作与 Codex Desktop 当前标记为实验能力。"
+            data-en="Serein is a HarmonyOS-native workspace for local Agents. Continue Claude Code and Codex sessions from your phone, review risky actions, monitor projects, and process external Issues. Code and sessions remain on your computer and self-hosted services; remote desktop, collaboration, and Codex Desktop are currently experimental."
+          >
+            Serein 是面向 HarmonyOS 的本地 Agent 工作台：在手机上继续 Claude Code 与 Codex 会话，处理风险审批、项目状态和外部 Issue。代码与会话保留在自己的电脑和自托管服务中；远程桌面、社区协作与 Codex Desktop 当前标记为实验能力。
+          </p>
+          <div class="hero-actions">
+            <a
+              class="button button-primary"
+              href="#flow"
+              data-zh="查看工作流程"
+              data-en="View workflow"
+              >查看工作流程 <span>↓</span></a
+            >
+            <a
+              class="button button-quiet"
+              href="#self-host"
+              data-zh="部署与文档"
+              data-en="Deploy & docs"
+              >部署与文档 <span>↗</span></a
+            >
+          </div>
+          <div class="hero-notes">
+            <span
+              ><i class="live-dot"></i
+              ><b data-zh="本地优先" data-en="Local first">本地优先</b></span
+            >
+            <span
+              ><b data-zh="人始终在回路中" data-en="Human in the loop"
+                >人始终在回路中</b
+              ></span
+            >
+            <span
+              ><b data-zh="V1.0 RC / 开源" data-en="V1.0 RC / Open source"
+                >V1.0 RC / 开源</b
+              ></span
+            >
+          </div>
+        </div>
+
+        <div class="hero-gallery" aria-label="Serein 界面轨道演示">
+          <div class="gallery-halo halo-a" aria-hidden="true"></div>
+          <div class="gallery-halo halo-b" aria-hidden="true"></div>
+          <p class="gallery-note">
+            <span></span
+            ><b
+              data-zh="终端、审批、远程与协作，一部手机集中查看"
+              data-en="Terminal, approvals, remote access, and collaboration in one mobile client"
+              >终端、审批、远程与协作，一部手机集中查看</b
+            >
+          </p>
+          <div class="orbit-scene">
+            <div class="orbit-track">
+              <figure class="orbit-card" style="--angle: 0deg">
+                <img
+                  src="screenshots/projects-showcase.jpg"
+                  alt="Serein 项目页截图"
+                />
+              </figure>
+              <figure class="orbit-card" style="--angle: 72deg">
+                <img
+                  src="screenshots/terminal-showcase.jpg"
+                  alt="Serein 终端会话截图"
+                />
+              </figure>
+              <figure class="orbit-card" style="--angle: 144deg">
+                <img
+                  src="screenshots/approvals-showcase.jpg"
+                  alt="Serein 审批记录截图"
+                />
+              </figure>
+              <figure class="orbit-card" style="--angle: 216deg">
+                <img
+                  src="screenshots/community-showcase.jpg"
+                  alt="Serein 社区页截图"
+                />
+              </figure>
+              <figure class="orbit-card" style="--angle: 288deg">
+                <img
+                  src="screenshots/remote-showcase.jpg"
+                  alt="Serein 远程桌面截图"
+                />
+              </figure>
+            </div>
+          </div>
+          <button
+            class="gallery-control"
+            type="button"
+            data-gallery-toggle
+            aria-pressed="false"
+          >
+            <span data-zh="暂停旋转" data-en="Pause motion">暂停旋转</span
+            ><i></i>
+          </button>
+        </div>
+
+        <aside
+          class="pet-story pet-story-hello"
+          data-pet-story="hello"
+          data-od-id="pet-story-hero"
+          aria-label="男生海獭与女生小熊猫来接班，一起查看手机通知"
+        >
+          <div class="pet-stage" aria-hidden="true">
+            <span class="pet-ground"></span>
+            <img class="pet-scene-pair pet-scene-sofa" src="assets/characters/hero-sofa-pair.png" alt="" />
+            <div class="pet-phone"><i></i><span></span><b></b></div>
+            <div class="pet-notice"><span></span><i></i></div>
+            <i class="pet-spark pet-spark-a"></i>
+            <i class="pet-spark pet-spark-b"></i>
+            <i class="pet-spark pet-spark-c"></i>
+          </div>
+          <p class="pet-story-label"><b>01</b><span>来接班</span></p>
+        </aside>
+      </section>
+
+      <section class="principle-strip shell reveal" aria-label="项目宣言">
+        <p
+          data-zh="无需持续盯守终端。<b>关键操作到来时，Serein 会把决定交还给你。</b>"
+          data-en="No need to watch the terminal continuously. <b>When a critical action arrives, Serein returns the decision to you.</b>"
+        >
+          无需持续盯守终端。<b>关键操作到来时，Serein 会把决定交还给你。</b>
+        </p>
+        <span>side quest / 01</span>
+      </section>
+
+      <section class="flow-section" id="flow" aria-labelledby="flow-title">
+        <div class="section-intro shell reveal">
+          <span>ONE THING, ONE LOOP</span>
+          <h2
+            id="flow-title"
+            data-zh="从外部反馈到验证回复。<br><i>手机端接续完整工作流程。</i>"
+            data-en="From external feedback to a verified reply.<br><i>Continue the complete workflow from your phone.</i>"
+          >
+            从外部反馈到验证回复。<br /><i>手机端接续完整工作流程。</i>
+          </h2>
+          <p
+            data-zh="Serein 将 GitHub/Gitee Issue 匹配到本地项目与既有 Agent 会话，并记录分析、审批、验证和回复结果；涉及写入、推送或高风险命令时，流程会等待用户确认。"
+            data-en="Serein matches GitHub and Gitee Issues to local projects and existing Agent sessions, then records analysis, approvals, verification, and reply results. Writes, pushes, and high-risk commands always wait for user confirmation."
+          >
+            Serein 将 GitHub/Gitee Issue 匹配到本地项目与既有 Agent 会话，并记录分析、审批、验证和回复结果；涉及写入、推送或高风险命令时，流程会等待用户确认。
+          </p>
+        </div>
+        <div
+          class="workflow-studio reveal"
+          data-workflow-studio
+          data-video-src="assets/serein-workflow.mp4?v=20260818-open"
+        >
+          <canvas
+            class="workflow-studio-canvas"
+            aria-label="可交互的 Serein 3D 工作室，点击电脑屏幕播放工作流视频"
+          ></canvas>
+          <div class="workflow-screen-media" aria-hidden="true">
+            <video
+              class="workflow-studio-video"
+              playsinline
+              muted
+              loop
+              preload="auto"
+            ></video>
+          </div>
+          <div class="workflow-studio-topline" aria-hidden="true">
+            <span>SEREIN / AGENT ROOM</span>
+            <span>MOVE TO LOOK · CLICK THE SCREEN</span>
+          </div>
+          <button
+            class="workflow-screen-action"
+            type="button"
+            data-workflow-screen-action
+            aria-label="在 3D 电脑屏幕中播放 Serein 工作流视频"
+          >
+            <span
+              class="workflow-screen-action-label"
+              data-zh="播放工作流"
+              data-en="Play the workflow"
+              >播放工作流</span
+            ><i aria-hidden="true"></i>
+          </button>
+          <div class="workflow-studio-caption">
+            <b>SEREIN<br />STUDIO</b>
+            <span
+              data-zh="电脑端运行 Agent，手机端查看状态、完成审批并在需要时接管。"
+              data-en="Run the Agent on your computer; review status, approve actions, and take over from your phone when needed."
+              >电脑端运行 Agent，手机端查看状态、完成审批并在需要时接管。</span
+            >
+          </div>
+        </div>
+        <div class="workflow-loop shell reveal" aria-label="从 Issue 到回复的移动工作流">
+          <div class="workflow-loop-intro">
+            <span>ONE ISSUE / ONE MOBILE LOOP</span>
+            <h3 data-zh="一个 Issue，一条可恢复会话。<i>手机端覆盖处理闭环。</i>" data-en="One Issue, one recoverable session. <i>The full handling loop stays on your phone.</i>">一个 Issue，一条可恢复会话。<i>手机端覆盖处理闭环。</i></h3>
+          </div>
+          <ol>
+            <li class="workflow-loop-node">
+              <button class="workflow-loop-card" type="button" aria-expanded="false">
+                <b>01 / DISCOVER</b><strong data-zh="Issue 进入" data-en="Issue arrives">Issue 进入</strong><span data-zh="GitHub · Gitee" data-en="GitHub · Gitee">GitHub · Gitee</span>
+              </button>
+              <div class="workflow-loop-detail"><p data-zh="拉取 Issue、评论与仓库信息；Serein 先用 Git Remote 对照本地项目，外部文本始终作为不可信数据处理。" data-en="Fetch the Issue, comments, and repository data. Serein matches the local project through Git Remote and treats external text as untrusted.">拉取 Issue、评论与仓库信息；Serein 先用 Git Remote 对照本地项目，外部文本始终作为不可信数据处理。</p></div>
+            </li>
+            <li class="workflow-loop-node">
+              <button class="workflow-loop-card" type="button" aria-expanded="false">
+                <b>02 / START</b><strong data-zh="拉起 Agent" data-en="Start Agent">拉起 Agent</strong><span data-zh="恢复或新建会话" data-en="Resume or create">恢复或新建会话</span>
+              </button>
+              <div class="workflow-loop-detail"><p data-zh="同一个 Issue 第一次建立独立会话，再次进入恢复原会话；项目默认 Agent 会被记住，不再每次重新选择。" data-en="An Issue gets an isolated session on first use and restores it on return. The project default Agent is remembered.">同一个 Issue 第一次建立独立会话，再次进入恢复原会话；项目默认 Agent 会被记住，不再每次重新选择。</p></div>
+            </li>
+            <li class="workflow-loop-node">
+              <button class="workflow-loop-card" type="button" aria-expanded="false">
+                <b>03 / RUN</b><strong data-zh="分析与执行" data-en="Analyze & run">分析与执行</strong><span data-zh="风险操作进入审批" data-en="Risky actions require approval">风险操作进入审批</span>
+              </button>
+              <div class="workflow-loop-detail"><p data-zh="Agent 先复现、定位、验证，再决定是否修改；涉及高风险命令时，手机审批仍是最后一道边界。" data-en="The Agent reproduces, locates, and validates before changing code. High-risk commands still stop at mobile approval.">Agent 先复现、定位、验证，再决定是否修改；涉及高风险命令时，手机审批仍是最后一道边界。</p></div>
+            </li>
+            <li class="workflow-loop-node">
+              <button class="workflow-loop-card" type="button" aria-expanded="false">
+                <b>04 / TAKE OVER</b><strong data-zh="远程接管" data-en="Take over">远程接管</strong><span data-zh="需要时继续人工操作" data-en="Continue manually when needed">需要时继续人工操作</span>
+              </button>
+              <div class="workflow-loop-detail"><p data-zh="需要人手处理文件、图形界面或代码细节时，可从同一台手机进入远程桌面，继续当前工作上下文。" data-en="When a file, graphical app, or code detail needs a human hand, open remote desktop on the same phone and continue the current context.">需要人手处理文件、图形界面或代码细节时，可从同一台手机进入远程桌面，继续当前工作上下文。</p></div>
+            </li>
+            <li class="workflow-loop-node">
+              <button class="workflow-loop-card" type="button" aria-expanded="false">
+                <b>05 / VERIFY</b><strong data-zh="验证发版" data-en="Verify release">验证发版</strong><span data-zh="测试后再确认" data-en="Test, then confirm">测试后再确认</span>
+              </button>
+              <div class="workflow-loop-detail"><p data-zh="结果摘要会保留复现情况、修改、测试与遗留风险；推送、发版、关闭 Issue 等写入动作始终需要明确确认。" data-en="The result summary keeps reproduction, changes, tests, and remaining risk. Pushes, releases, and closing an Issue always require explicit confirmation.">结果摘要会保留复现情况、修改、测试与遗留风险；推送、发版、关闭 Issue 等写入动作始终需要明确确认。</p></div>
+            </li>
+            <li class="workflow-loop-node">
+              <button class="workflow-loop-card" type="button" aria-expanded="false">
+                <b>06 / REPLY</b><strong data-zh="回复 Issue" data-en="Reply to Issue">回复 Issue</strong><span data-zh="确认后写回" data-en="Write back after approval">确认后写回</span>
+              </button>
+              <div class="workflow-loop-detail"><p data-zh="根据处理结果生成可编辑的回复草稿；你确认之后，才会把内容写回 GitHub、Gitee 或后续支持的平台。" data-en="A result-based reply draft stays editable. Only after your confirmation is it written back to GitHub, Gitee, or a future provider.">根据处理结果生成可编辑的回复草稿；你确认之后，才会把内容写回 GitHub、Gitee 或后续支持的平台。</p></div>
+            </li>
+          </ol>
+        </div>
+
+        <aside
+          class="pet-story pet-story-approval"
+          data-pet-story="approval"
+          data-od-id="pet-story-flow"
+          aria-label="男生海獭与女生小熊猫在手机上接住一条审批"
+        >
+          <div class="pet-stage" aria-hidden="true">
+            <span class="pet-ground"></span>
+            <img class="pet-scene-pair pet-scene-office" src="assets/characters/approval-office-pair.png" alt="" />
+            <div class="pet-approval-card">
+              <span class="pet-approval-pending">需要确认</span>
+              <span class="pet-approval-done">已经接住</span>
+              <i></i><b></b><em></em>
+            </div>
+            <div class="pet-relay"><i></i></div>
+          </div>
+          <p class="pet-story-label"><b>02</b><span>手机审批</span></p>
+        </aside>
+      </section>
+
+      <section
+        class="features-section"
+        id="features"
+        aria-labelledby="features-title"
+      >
+        <div class="section-intro shell reveal">
+          <span>CAPABILITIES / VERIFIABLE ARCHITECTURE</span>
+          <h2
+            id="features-title"
+            data-zh="从终端到远程。<br><i>一套鸿蒙原生工作台。</i>"
+            data-en="From terminal to remote access.<br><i>One HarmonyOS-native workspace.</i>"
+          >
+            从终端到远程。<br /><i>一套鸿蒙原生工作台。</i>
+          </h2>
+          <p
+            class="section-summary"
+            data-zh="终端会话、风险审批、后台通知、设备监控、远程桌面和 Issue 协作通过同一套自托管链路连接。稳定核心与实验功能明确区分，工程参数均可在公开源码和配置中核对。"
+            data-en="Terminal sessions, risk approvals, background notifications, device monitoring, remote desktop, and Issue collaboration share one self-hosted path. Stable and experimental capabilities are clearly separated, and engineering parameters can be verified in the public source and configuration."
+          >
+            终端会话、风险审批、后台通知、设备监控、远程桌面和 Issue 协作通过同一套自托管链路连接。稳定核心与实验功能明确区分，工程参数均可在公开源码和配置中核对。
+          </p>
+        </div>
+        <aside class="harmony-native shell reveal">
+          <div class="harmony-native-copy">
+            <span>HARMONYOS NATIVE / ARKTS</span>
+            <h3 class="harmony-native-headline">
+              <span data-zh="把" data-en="Bring">把</span>
+              <span
+                class="text-carousel text-carousel-agent"
+                data-carousel-zh="Claude Code / Codex|本地 Agent 会话|项目终端|远程桌面"
+                data-carousel-en="Claude Code / Codex|local Agent sessions|project terminals|remote desktop"
+                aria-live="polite"
+              >
+                <span class="text-carousel-badge">
+                  <span class="text-carousel-content">Claude Code / Codex</span>
+                </span>
+              </span>
+              <span data-zh="从电脑延伸到手机。" data-en="from the computer to your phone.">从电脑延伸到手机。</span><br />
+              <span class="harmony-title-line">
+                <span
+                  class="text-carousel text-carousel-answer"
+                  data-carousel-zh="鸿蒙原生|ArkTS 原生|系统原生"
+                  data-carousel-en="HarmonyOS-native|ArkTS-native|system-native"
+                  aria-live="polite"
+                >
+                  <span class="text-carousel-badge">
+                    <span class="text-carousel-content">鸿蒙原生</span>
+                  </span>
+                </span>
+                <span data-zh="Agent 工作台，接续任务与关键决策。" data-en="Agent workspace continues tasks and critical decisions.">Agent 工作台，接续任务与关键决策。</span>
+              </span>
+            </h3>
+          </div>
+          <div class="harmony-native-answer">
+            <b data-zh="鸿蒙原生客户端，直接接入系统能力。" data-en="A native HarmonyOS client, integrated with system capabilities.">鸿蒙原生客户端，直接接入系统能力。</b>
+            <p data-zh="ArkTS 直接承载终端会话、风险审批、系统通知与远程触控。应用在后台时接收关键通知，回到前台后继续使用原生键盘、手势和远程桌面；Claude Code 与 Codex 共用同一套项目与会话入口。" data-en="ArkTS directly hosts terminal sessions, risk approvals, system notifications, and remote touch. Critical notices arrive while the app is in the background; native keyboard, gestures, and remote desktop continue when you return. Claude Code and Codex share one project and session entry point.">ArkTS 直接承载终端会话、风险审批、系统通知与远程触控。应用在后台时接收关键通知，回到前台后继续使用原生键盘、手势和远程桌面；Claude Code 与 Codex 共用同一套项目与会话入口。</p>
+          </div>
+          <ul class="harmony-native-signals" aria-label="鸿蒙原生能力">
+            <li><b>01</b><span data-zh="后台通知与审批" data-en="Background notices & approvals">后台通知与审批</span></li>
+            <li><b>02</b><span data-zh="原生键盘、手势与触控" data-en="Native keys, gestures & touch">原生键盘、手势与触控</span></li>
+            <li><b>03</b><span data-zh="Claude Code + Codex 同屏协作" data-en="Claude Code + Codex together">Claude Code + Codex 同屏协作</span></li>
+          </ul>
+        </aside>
+        <section class="engineering-ledger shell reveal" aria-label="Serein 工程路线">
+          <div class="engineering-ledger-title">
+            <span>GIT SNAPSHOT / 2026.07.28</span>
+            <strong>83,347</strong>
+            <b data-zh="行可追踪一方源码 · 296 个源文件" data-en="tracked first-party source lines · 296 source files">行可追踪一方源码 · 296 个源文件</b>
+            <dl class="engineering-signal-strip" aria-label="可核对的运行参数">
+              <div><dt>200ms</dt><dd data-zh="CLI 事件扫描" data-en="CLI event scan">CLI 事件扫描</dd></div>
+              <div><dt>1s</dt><dd data-zh="远程授权检查" data-en="remote consent check">远程授权检查</dd></div>
+              <div><dt>25s</dt><dd data-zh="WebSocket 保活" data-en="WebSocket keepalive">WebSocket 保活</dd></div>
+              <div><dt>AES-256</dt><dd data-zh="GCM 会话加密" data-en="GCM session cipher">GCM 会话加密</dd></div>
+            </dl>
+          </div>
+          <div class="engineering-ledger-lines">
+            <article><span>GO / SERVER</span><h3 data-zh="单一服务承载审批、状态机与长连接。" data-en="One service handles approvals, state machines, and persistent connections.">单一服务承载审批、状态机与长连接。</h3><p data-zh="Go + chi + SQLite 降低部署复杂度，并在服务端集中处理超时、并发和 WebSocket 生命周期。" data-en="Go, chi, and SQLite reduce deployment complexity while centralizing timeouts, concurrency, and WebSocket lifecycles on the server.">Go + chi + SQLite 降低部署复杂度，并在服务端集中处理超时、并发和 WebSocket 生命周期。</p></article>
+            <article><span>ARKTS / NATIVE APP</span><h3 data-zh="HarmonyOS 原生客户端直接调用系统能力。" data-en="The HarmonyOS-native client integrates directly with system capabilities.">HarmonyOS 原生客户端直接调用系统能力。</h3><p data-zh="系统通知、后台任务、键盘、手势、触控与 HUKS 安全存储均由 ArkTS 原生实现。" data-en="System notifications, background tasks, keyboard, gestures, touch, and HUKS secure storage are implemented natively with ArkTS.">系统通知、后台任务、键盘、手势、触控与 HUKS 安全存储均由 ArkTS 原生实现。</p></article>
+            <article><span>NODE + PYTHON / RELAY</span><h3 data-zh="200ms 轮询终端事件，风险判定保留在本机。" data-en="Poll terminal events every 200ms and keep risk decisions local.">200ms 轮询终端事件，风险判定保留在本机。</h3><p data-zh="Node.js 负责 PTY 与双向 Relay，Python Hook 负责风险分级；审批基础设施不可用时，敏感操作默认拒绝。" data-en="Node.js handles PTY and the bidirectional relay, while the Python Hook grades risk. Sensitive actions fail closed when approval infrastructure is unavailable.">Node.js 负责 PTY 与双向 Relay，Python Hook 负责风险分级；审批基础设施不可用时，敏感操作默认拒绝。</p></article>
+          </div>
+        </section>
+        <div
+          class="agent-playground shell reveal"
+          data-feature-lab
+          data-mode="terminal"
+        >
+          <div class="playground-topline">
+            <span class="playground-kicker">LIVE AGENT DESK</span>
+            <span class="playground-state"
+              ><i></i><b data-feature-status>已连接原有会话</b></span
+            >
+          </div>
+          <div class="playground-main">
+            <div class="agent-radar" aria-hidden="true">
+              <span class="radar-ring ring-one"></span
+              ><span class="radar-ring ring-two"></span
+              ><span class="radar-core"></span><span class="radar-scan"></span>
+              <span class="radar-label" data-feature-visual>SESSION</span>
+            </div>
+            <div class="playground-copy" aria-live="polite">
+              <span data-feature-index>01 / TERMINAL</span>
+              <h3 data-feature-title>在手机继续原有终端会话，保留项目上下文。</h3>
+              <p data-feature-copy>
+                手机端接收增量输出并继续输入，Agent 无需重新加载项目背景。
+              </p>
+            </div>
+            <button class="playground-replay" type="button" data-feature-replay>
+              <span data-zh="重播演示" data-en="Replay demo">重播演示</span
+              ><i aria-hidden="true"></i>
+            </button>
+          </div>
+          <p
+            class="playground-hint"
+            data-zh="选择下方能力，查看它在实际工作流程中的运行方式。"
+            data-en="Choose a capability below to see how it operates in a real workflow."
+          >
+            选择下方能力，查看它在实际工作流程中的运行方式。
+          </p>
+        </div>
+        <div class="feature-horizontal-stage" data-horizontal-stage>
+          <div class="feature-grid" data-horizontal-track>
+            <article
+              class="feature-card large reveal is-active"
+              role="button"
+              tabindex="0"
+              data-feature-option
+              data-feature-key="terminal"
+              data-feature-index="01 / TERMINAL"
+              data-feature-visual="SESSION"
+              data-feature-title-zh="在手机继续原有终端会话，保留项目上下文。"
+              data-feature-copy-zh="手机端接收增量输出并继续输入，Agent 无需重新加载项目背景。"
+              data-feature-status-zh="已连接原有会话"
+              data-feature-title-en="Continue the original terminal session on your phone with project context preserved."
+              data-feature-copy-en="Receive incremental output and continue input from mobile without reloading the Agent's project context."
+              data-feature-status-en="Original session connected"
+            >
+              <p class="card-index">01 / TERMINAL</p>
+              <h3
+                data-zh="在手机继续终端会话，<br>保留完整项目上下文。"
+                data-en="Continue terminal sessions on your phone,<br>with full project context preserved."
+              >
+                在手机继续终端会话，<br />保留完整项目上下文。
+              </h3>
+              <div class="feature-terminal">
+                <span>› continue the session</span><i></i
+                ><b>Codex is thinking</b>
+              </div>
+            </article>
+            <article
+              class="feature-card approval-card reveal"
+              role="button"
+              tabindex="0"
+              data-feature-option
+              data-feature-key="approval"
+              data-feature-index="02 / APPROVAL"
+              data-feature-visual="REVIEW"
+              data-feature-title-zh="风险操作进入手机审批，确认后再继续执行。"
+              data-feature-copy-zh="命令、目标路径和风险原因集中展示；允许、拒绝和超时结果均保留记录。"
+              data-feature-status-zh="等待审批决定"
+              data-feature-title-en="Risky actions enter mobile approval before execution continues."
+              data-feature-copy-en="Commands, target paths, and risk reasons are shown together, with allow, deny, and timeout results recorded."
+              data-feature-status-en="Waiting for approval"
+            >
+              <p class="card-index">02 / APPROVAL</p>
+              <h3
+                data-zh="风险操作先审批，<br>确认后再执行。"
+                data-en="Risky actions require approval<br>before execution."
+              >
+                风险操作先审批，<br />确认后再执行。
+              </h3>
+              <div class="mini-approval">
+                <span>needs review</span><b>git push origin main</b>
+                <div><i>拒绝</i><em>允许</em></div>
+              </div>
+            </article>
+            <article
+              class="feature-card community-card reveal"
+              role="button"
+              tabindex="0"
+              data-feature-option
+              data-feature-key="community"
+              data-feature-index="03 / COMMUNITY"
+              data-feature-visual="ISSUE"
+              data-feature-title-zh="将外部 Issue 匹配到对应本地项目与 Agent 会话。"
+              data-feature-copy-zh="读取仓库、Issue 与评论后恢复独立会话，生成处理摘要和可编辑回复草稿。"
+              data-feature-status-zh="已匹配本地项目"
+              data-feature-title-en="Match each external Issue to its local project and Agent session."
+              data-feature-copy-en="Read repository, Issue, and comment data, restore an isolated session, and generate a result summary and editable reply draft."
+              data-feature-status-en="Local project matched"
+            >
+              <p class="card-index">03 / COMMUNITY</p>
+              <span
+                class="experimental"
+                data-zh="实验功能 · 源码开放"
+                data-en="Experimental · Open source"
+                >实验功能 · 源码开放</span
+              >
+              <h3
+                data-zh="将 Issue 交给<br>对应项目的 Agent。"
+                data-en="Give each Issue to<br>the Agent for its project."
+              >
+                将 Issue 交给<br />对应项目的 Agent。
+              </h3>
+              <div class="mini-issue">
+                <span>GitHub / Gitee</span><b>#1 分析项目结构</b
+                ><small>匹配本地项目 · 继续会话</small>
+              </div>
+            </article>
+            <article
+              class="feature-card remote-card reveal"
+              role="button"
+              tabindex="0"
+              data-feature-option
+              data-feature-key="remote"
+              data-feature-index="04 / REMOTE"
+              data-feature-visual="REMOTE"
+              data-feature-title-zh="需要图形界面操作时，从手机按需接管电脑桌面。"
+              data-feature-copy-zh="远程桌面补充终端工作流；连接、授权和控制状态均明确显示，当前仍属实验能力。"
+              data-feature-status-zh="等待远程连接"
+              data-feature-title-en="Take over the computer desktop from your phone when graphical interaction is required."
+              data-feature-copy-en="Remote desktop complements the terminal workflow. Connection, authorization, and control states remain visible; this capability is experimental."
+              data-feature-status-en="Waiting for remote connection"
+            >
+              <p class="card-index">04 / REMOTE</p>
+              <span
+                class="experimental"
+                data-zh="实验功能 · 源码开放"
+                data-en="Experimental · Open source"
+                >实验功能 · 源码开放</span
+              >
+              <h3
+                data-zh="按需接管电脑桌面，<br>连接状态全程可见。"
+                data-en="Take over the remote desktop on demand.<br>Currently experimental."
+              >
+                按需接管电脑桌面，<br />连接状态全程可见。
+              </h3>
+              <div class="remote-wave"><i></i><i></i><i></i><span></span></div>
+            </article>
+            <article
+              class="feature-card monitor-card reveal"
+              role="button"
+              tabindex="0"
+              data-feature-option
+              data-feature-key="monitor"
+              data-feature-index="05 / MONITOR"
+              data-feature-visual="SIGNAL"
+              data-feature-title-zh="集中查看电脑资源状态，并在异常时接收提醒。"
+              data-feature-copy-zh="CPU、内存、磁盘、GPU 与温度按心跳静默更新；无法准确采集的字段明确显示不可用。"
+              data-feature-status-zh="监控数据已更新"
+              data-feature-title-en="Monitor computer resources and receive alerts when conditions require attention."
+              data-feature-copy-en="CPU, memory, disk, GPU, and temperature update through the heartbeat; unavailable fields are explicitly marked instead of estimated."
+              data-feature-status-en="Monitoring data updated"
+            >
+              <p class="card-index">05 / MONITOR</p>
+              <h3
+                data-zh="查看电脑资源状态，<br>异常情况及时提醒。"
+                data-en="Monitor computer resources,<br>and receive alerts when needed."
+              >
+                查看电脑资源状态，<br />异常情况及时提醒。
+              </h3>
+              <div class="monitor-bars">
+                <span style="--h: 36%"></span><span style="--h: 64%"></span
+                ><span style="--h: 42%"></span><span style="--h: 76%"></span
+                ><span style="--h: 55%"></span><i>CPU / RAM / GPU</i>
+              </div>
+            </article>
+          </div>
+        </div>
+
+        <aside
+          class="pet-story pet-story-agent"
+          data-pet-story="agent"
+          data-od-id="pet-story-features"
+          aria-label="男生海獭与女生小熊猫一起看着 Agent 完成工作"
+        >
+          <div class="pet-stage" aria-hidden="true">
+            <span class="pet-ground"></span>
+            <img class="pet-scene-pair pet-scene-floor" src="assets/characters/agent-floor-pair.png" alt="" />
+            <div class="pet-agent-status">
+              <i></i><i></i><i></i><b></b>
+            </div>
+            <div class="pet-agent-signal"><i></i><i></i><i></i></div>
+          </div>
+          <p class="pet-story-label"><b>03</b><span>一起看 Agent</span></p>
+        </aside>
+      </section>
+
+      <section
+        class="self-host shell"
+        id="self-host"
+        aria-labelledby="self-host-title"
+      >
+        <div class="self-host-copy reveal spotlight-surface" data-spotlight-surface>
+          <span>OPEN SOURCE / SELF-HOSTED</span>
+          <h2
+            id="self-host-title"
+            data-zh="完整开源，自托管部署。<br><i>控制权始终属于你。</i>"
+            data-en="Fully open source and self-hosted.<br><i>Control remains yours.</i>"
+          >
+            完整开源，自托管部署。<br /><i>控制权始终属于你。</i>
+          </h2>
+          <p
+            data-zh="源码、部署配置与运行边界公开可查。你可以在自己的 Windows 电脑和服务器上部署 Serein，并使用 HarmonyOS 客户端连接；Bug、功能建议、兼容性问题与代码贡献均可通过 GitHub 反馈。"
+            data-en="Source code, deployment configuration, and runtime boundaries are public and reviewable. Deploy Serein on your own Windows computer and server, connect through the HarmonyOS client, and report bugs, compatibility issues, feature requests, or contributions on GitHub."
+          >
+            源码、部署配置与运行边界公开可查。你可以在自己的 Windows 电脑和服务器上部署 Serein，并使用 HarmonyOS 客户端连接；Bug、功能建议、兼容性问题与代码贡献均可通过 GitHub 反馈。
+          </p>
+
+          <div class="maker-profile">
+            <img src="assets/serein-mark.png" alt="" />
+            <div>
+              <b>liznee <span>/ Serein 开发者</span></b>
+              <small>PERSONAL OPEN-SOURCE PROJECT</small>
+            </div>
+          </div>
+
+          <div class="self-host-actions">
+            <a
+              class="button button-primary"
+              href="../README.md"
+              data-zh="阅读 README"
+              data-en="Read README"
+              >阅读 README <span>↗</span></a
+            ><a
+              class="button button-quiet"
+              href="../docs/DEPLOYMENT.md"
+              data-zh="查看部署文档"
+              data-en="Deployment docs"
+              >查看部署文档 <span>↗</span></a
+            >
+            <a
+              class="github-cube-button"
+              href="https://github.com/liznee"
+              target="_blank"
+              rel="noreferrer"
+              aria-label="在 GitHub 关注 liznee"
+              data-github-follow
+            >
+              <span class="github-cube-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" role="presentation">
+                  <path d="M12 .297C5.37.297 0 5.67 0 12.297c0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61-.546-1.385-1.335-1.755-1.335-1.755-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297 24 5.67 18.627.297 12 .297Z" />
+                </svg>
+              </span>
+              <span class="github-cube">
+                <span
+                  class="github-cube-side github-cube-front"
+                  data-zh="关注 GitHub"
+                  data-en="Follow on GitHub"
+                >关注 GitHub</span>
+                <span
+                  class="github-cube-side github-cube-top"
+                  data-zh="打开 @liznee"
+                  data-en="Open @liznee"
+                >打开 @liznee</span>
+              </span>
+            </a>
+          </div>
+          <ul class="contact-principles" aria-label="Serein 开源原则">
+            <li><b>LOCAL</b><span data-zh="项目和会话留在你的电脑" data-en="Projects and sessions stay on your computer">项目和会话留在你的电脑</span></li>
+            <li><b>CONFIRM</b><span data-zh="关键动作等待你的确认" data-en="Critical actions wait for your confirmation">关键动作等待你的确认</span></li>
+            <li><b>HONEST</b><span data-zh="实验能力坦白说明边界" data-en="Experimental limits are stated plainly">实验能力坦白说明边界</span></li>
+          </ul>
+
+        </div>
+
+        <div
+          class="contact-board reveal spotlight-surface"
+          data-spotlight-surface
+          data-supporter-wall
+          data-github-owner="liznee"
+          data-github-repo=""
+          data-stargazer-threshold="30"
+        >
+          <div class="contact-board-head">
+            <span data-wall-kicker>TECH STACK / IN MOTION</span>
+            <i><em></em> <span data-wall-status>OPEN SOURCE / SELF-HOSTED</span></i>
+          </div>
+
+          <div class="supporter-wall-intro">
+            <strong
+              data-wall-title
+              data-zh="Serein 的运行组件与技术分工。"
+              data-en="The technology behind Serein."
+            >Serein 的运行组件与技术分工。</strong>
+            <span
+              data-wall-description
+              data-zh="ArkTS、Go、Node.js、Python、C/C++ 与 WebRTC 分别承担鸿蒙客户端、后端服务、PTY Relay、风险审批和远程桌面链路。"
+              data-en="ArkTS, Go, Node.js, Python, C/C++, and WebRTC power the HarmonyOS client, backend, PTY relay, risk approvals, and remote desktop path."
+            >ArkTS、Go、Node.js、Python、C/C++ 与 WebRTC 分别承担鸿蒙客户端、后端服务、PTY Relay、风险审批和远程桌面链路。</span>
+          </div>
+
+          <div class="supporter-marquees" aria-label="Serein 技术栈滚动展示">
+            <div class="supporter-row supporter-row-left" tabindex="0" aria-label="技术栈第一行，悬停或聚焦暂停">
+              <div class="supporter-track" data-supporter-track="0"></div>
+            </div>
+            <div class="supporter-row supporter-row-right" tabindex="0" aria-label="技术栈第二行，悬停或聚焦暂停">
+              <div class="supporter-track" data-supporter-track="1"></div>
+            </div>
+            <div class="supporter-row supporter-row-left supporter-row-slow" tabindex="0" aria-label="技术栈第三行，悬停或聚焦暂停">
+              <div class="supporter-track" data-supporter-track="2"></div>
+            </div>
+          </div>
+
+          <a class="supporter-wall-link" href="https://github.com/liznee" target="_blank" rel="noreferrer">
+            <span data-zh="查看项目与公开源码" data-en="View the project and public source">查看项目与公开源码</span>
+            <b aria-hidden="true">↗</b>
+          </a>
+        </div>
+
+        <div class="contact-finale reveal">
+          <div class="contact-finale-links">
+            <span>SEREIN / 2026</span>
+            <a href="../README.md">README</a>
+            <a href="../docs/DEPLOYMENT.md">DOCS</a>
+            <a href="https://github.com/liznee" target="_blank" rel="noreferrer">GITHUB</a>
+            <span>中文 / EN</span>
+          </div>
+          <strong
+            data-zh="Serein 让你躺着也能 <i>Vibe Coding。</i>"
+            data-en="Serein lets you <i>Vibe Code from the couch.</i>"
+          >Serein 让你躺着也能 <i>Vibe Coding。</i></strong>
+        </div>
+
+        <aside
+          class="pet-story pet-story-camp"
+          data-pet-story="camp"
+          data-od-id="pet-story-self-host"
+          aria-label="男生海獭与穿着轻薄短袖夏装的女生小熊猫并排躺在夏日露营地的躺椅上，帐篷就在身后，两人一边晒太阳一边用手机查看远程状态，手边放着可乐"
+        >
+          <div class="pet-stage" aria-hidden="true">
+            <span class="pet-ground"></span>
+            <span class="pet-camp-sun"><i></i></span>
+            <span class="pet-camp-sea"></span>
+            <span class="pet-camp-tent"><i></i><b></b></span>
+            <img class="pet-lounge-pair" src="assets/characters/lounge-phone-pair-summer.png" alt="" />
+            <span class="pet-phone-ping pet-phone-ping-left"><i></i></span>
+            <span class="pet-phone-ping pet-phone-ping-right"><i></i></span>
+            <div class="pet-cola pet-cola-left"><i></i><b></b></div>
+            <div class="pet-cola pet-cola-right"><i></i><b></b></div>
+            <span class="pet-camp-breeze pet-camp-breeze-one"></span>
+            <span class="pet-camp-breeze pet-camp-breeze-two"></span>
+          </div>
+          <p class="pet-story-label"><b>04</b><span>阳光慢一点</span></p>
+        </aside>
+      </section>
+    </main>
+
+    <footer class="site-footer shell">
+      <a class="brand" href="#top"><img class="brand-mark" src="assets/serein-mark.png" alt="" /><span>Serein</span></a>
+      <p>Open-source HarmonyOS workspace for local AI agents.</p>
+      <span>OPEN SOURCE / 2026</span>
+    </footer>
+    <script src="assets/gsap.min.js"></script>
+    <script src="assets/ScrollTrigger.min.js"></script>
+    <script src="assets/workflow-scene.bundle.js?v=20260801-screen-hit"></script>
+    <script src="water-buttons.js?v=20260731-transition-pause"></script>
+    <script src="landing.js?v=20260801-screen-hit"></script>
+    <script src="pet-stories.js?v=20260801-summer-camp"></script>
+  </body>
+</html>

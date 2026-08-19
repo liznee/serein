@@ -1,0 +1,36 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "Serein 远程审批客户端 - Claude Code 权限审批桥接"
+    },
+    {
+      "name": "EntryAbility_desc",
+      "value": "Serein 远程审批"
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "Serein"
+    },
+    {
+      "name": "notification_permission_reason",
+      "value": "用于接收实时审批推送提醒，不遗漏高危命令审批"
+    },
+    {
+      "name": "internet_permission_reason",
+      "value": "用于连接审批后端服务和 ntfy 推送"
+    },
+    {
+      "name": "biometric_permission_reason",
+      "value": "用于 PIN/面部识别验证身份，保护审批操作不被未授权使用"
+    },
+    {
+      "name": "microphone_permission_reason",
+      "value": "用于语音输入功能，将语音转为文字发送到终端"
+    },
+    {
+      "name": "camera_permission_reason",
+      "value": "用于扫码添加项目，扫描二维码连接后端"
+    }
+  ]
+}

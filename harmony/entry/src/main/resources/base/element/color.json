@@ -1,0 +1,29 @@
+{
+  "color": [
+    { "name": "start_window_background", "value": "#0B0E12" },
+    { "name": "primary", "value": "#D97757" },
+    { "name": "primary_container", "value": "#2A1A12" },
+    { "name": "success", "value": "#17a34a" },
+    { "name": "success_container", "value": "#0A1C12" },
+    { "name": "warning", "value": "#d97730" },
+    { "name": "warning_container", "value": "#1C1508" },
+    { "name": "danger", "value": "#b53333" },
+    { "name": "danger_container", "value": "#1A0E0C" },
+    { "name": "info", "value": "#8C909F" },
+    { "name": "surface", "value": "#1D2024" },
+    { "name": "surface_secondary", "value": "#272A2F" },
+    { "name": "background", "value": "#111418" },
+    { "name": "text_primary", "value": "#E1E2E8" },
+    { "name": "text_secondary", "value": "#C2C6D6" },
+    { "name": "text_tertiary", "value": "#8C909F" },
+    { "name": "text_inverse", "value": "#111418" },
+    { "name": "divider", "value": "#32353A" },
+    { "name": "overlay", "value": "#99000000" },
+    { "name": "risk_green_text", "value": "#17a34a" },
+    { "name": "risk_green_bg", "value": "#0A1C12" },
+    { "name": "risk_yellow_text", "value": "#d97730" },
+    { "name": "risk_yellow_bg", "value": "#1C1508" },
+    { "name": "risk_red_text", "value": "#b53333" },
+    { "name": "risk_red_bg", "value": "#1A0E0C" }
+  ]
+}

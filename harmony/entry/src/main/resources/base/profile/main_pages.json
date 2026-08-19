@@ -1,0 +1,17 @@
+{
+  "src": [
+    "pages/SplashPage",
+    "pages/MainTabs",
+    "pages/ProjectsPage",
+    "pages/ApprovalsPage",
+    "pages/PairPage",
+    "pages/DetailPage",
+    "pages/HistoryPage",
+    "pages/SettingsPage",
+    "pages/TerminalPage",
+    "pages/CollaborationPage",
+    "pages/RemoteCapabilityPage",
+    "pages/RemoteDesktopPage",
+    "pages/MonitoringAlertsPage"
+  ]
+}

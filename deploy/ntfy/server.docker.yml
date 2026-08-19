@@ -1,0 +1,7 @@
+# Docker Compose 内部监听容器 80 端口；公网 TLS 由反向代理终止。
+listen-http: ":80"
+cache-file: "/var/cache/ntfy/cache.db"
+behind-proxy: true
+
+# Serein 使用随机 topic 隔离部署。若后续为 ntfy 配置用户认证，
+# 还需要同步扩展 App 与后端的 ntfy 凭证配置，不能只改这里。

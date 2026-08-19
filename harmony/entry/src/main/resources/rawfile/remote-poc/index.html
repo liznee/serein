@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+  <meta name="color-scheme" content="dark">
+  <title>Serein Remote Lab</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b0e12;
+      --surface: #161b22;
+      --surface-2: #11161c;
+      --border: rgba(140, 144, 159, 0.16);
+      --text: #e1e2e8;
+      --muted: #8c909f;
+      --coral: #d97757;
+      --soft: #c89a89;
+      --ok: #9eb6a4;
+      --bad: #c78378;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { margin: 0; min-height: 100%; background: var(--bg); color: var(--text); font-family: system-ui, sans-serif; }
+    body { padding: 14px 18px 28px; }
+    .intro { padding: 4px 2px 14px; }
+    .eyebrow { color: var(--soft); font: 600 11px/1.4 ui-monospace, monospace; letter-spacing: .12em; text-transform: uppercase; }
+    h1 { margin: 7px 0 7px; font-size: 21px; line-height: 1.25; }
+    .intro p { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.6; }
+    .card { background: linear-gradient(145deg, rgba(22,27,34,.98), rgba(17,22,28,.98)); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+    .row { min-height: 54px; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 11px 15px; border-bottom: 1px solid var(--border); }
+    .row:last-child { border-bottom: 0; }
+    .name { font-size: 13px; }
+    .hint { margin-top: 3px; color: var(--muted); font-size: 10px; }
+    .value { flex: none; border: 1px solid var(--border); border-radius: 999px; padding: 5px 10px; color: var(--muted); background: rgba(255,255,255,.02); font: 600 10px/1 ui-monospace, monospace; }
+    .value.ok { color: var(--ok); border-color: rgba(158,182,164,.30); background: rgba(158,182,164,.07); }
+    .value.bad { color: var(--bad); border-color: rgba(199,131,120,.30); background: rgba(199,131,120,.07); }
+    .codecs { margin-top: 12px; padding: 14px 15px; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; }
+    .codecs h2 { margin: 0 0 8px; color: var(--muted); font-size: 11px; font-weight: 500; }
+    .codec-list { display: flex; flex-wrap: wrap; gap: 6px; }
+    .codec { padding: 5px 8px; border-radius: 7px; color: #c2c6d6; background: rgba(255,255,255,.035); font: 10px/1.2 ui-monospace, monospace; }
+    .summary { display: flex; align-items: center; gap: 9px; margin: 13px 0; color: var(--muted); font-size: 11px; }
+    .dot { width: 8px; height: 8px; border: 2px solid rgba(217,119,87,.3); border-top-color: var(--coral); border-radius: 50%; animation: spin .8s linear infinite; }
+    .summary.done .dot { border: 0; background: var(--ok); animation: none; }
+    .summary.failed .dot { border: 0; background: var(--bad); animation: none; }
+    button { width: 100%; height: 44px; border: 1px solid rgba(217,119,87,.27); border-radius: 12px; color: var(--coral); background: rgba(217,119,87,.08); font-size: 13px; font-weight: 600; }
+    button:disabled { opacity: .55; }
+    .privacy { margin: 12px 2px 0; color: #6f7481; font-size: 10px; line-height: 1.55; }
+    .lab { margin-top: 18px; padding: 15px; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; }
+    .lab h2 { margin: 0; font-size: 15px; }
+    .lab p { margin: 6px 0 12px; color: var(--muted); font-size: 10px; line-height: 1.55; }
+    .signal-input { width: 100%; height: 42px; padding: 0 11px; border: 1px solid var(--border); border-radius: 10px; outline: none; color: var(--text); background: #0b0e12; font: 10px/1.2 ui-monospace, monospace; }
+    .signal-input:focus { border-color: rgba(217,119,87,.42); }
+    .lab-actions { display: grid; grid-template-columns: 1fr 84px; gap: 8px; margin-top: 8px; }
+    .lab-actions button { margin: 0; }
+    .lab-actions .stop { color: var(--muted); border-color: var(--border); background: rgba(255,255,255,.025); }
+    .remote-video { display: none; width: 100%; margin-top: 12px; aspect-ratio: 16/9; object-fit: contain; background: #050608; border-radius: 11px; }
+    .remote-video.visible { display: block; }
+    .lab-status { min-height: 16px; margin-top: 9px; color: var(--muted); font-size: 10px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <section class="intro">
+    <div class="eyebrow">local-only probe</div>
+    <h1>这台设备能否承载远控画面？</h1>
+    <p>使用两个本地 PeerConnection 建立自环数据通道，并读取 ArkWeb 声明的视频解码能力。</p>
+  </section>
+
+  <div class="card">
+    <div class="row">
+      <div><div class="name">ArkWeb WebRTC</div><div class="hint">RTCPeerConnection 是否存在</div></div>
+      <div class="value" id="rtc">等待</div>
+    </div>
+    <div class="row">
+      <div><div class="name">本地数据通道</div><div class="hint">不经过 Serein 后端或公网服务器</div></div>
+      <div class="value" id="channel">等待</div>
+    </div>
+    <div class="row">
+      <div><div class="name">H.264 视频能力</div><div class="hint">仅依据 WebRTC receiver capability</div></div>
+      <div class="value" id="h264">等待</div>
+    </div>
+    <div class="row">
+      <div><div class="name">自环往返耗时</div><div class="hint">同一页面内发送并回显一条探针消息</div></div>
+      <div class="value" id="rtt">—</div>
+    </div>
+  </div>
+
+  <div class="codecs">
+    <h2>ArkWeb 报告的视频 Codec</h2>
+    <div class="codec-list" id="codecs"><span class="codec">检测中</span></div>
+  </div>
+
+  <div class="summary" id="summary"><span class="dot"></span><span id="summaryText">正在进行本地能力检测…</span></div>
+  <button type="button" id="rerun" disabled>重新检测</button>
+  <p class="privacy">不会申请屏幕、摄像头或麦克风权限；不会保存 SDP、ICE candidate、设备地址或其他连接信息。</p>
+
+  <section class="lab">
+    <h2>局域网视频接收实验</h2>
+    <p>电脑端默认发送动画测试图。将信令实验服务输出的 phone_signal_url 粘贴到下方；媒体使用 WebRTC 点对点传输。</p>
+    <input class="signal-input" id="signalUrl" type="url" inputmode="url" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="ws://电脑局域网IP:8788/signal?room=...&role=client">
+    <div class="lab-actions">
+      <button type="button" id="connectLab">连接测试画面</button>
+      <button type="button" class="stop" id="stopLab">停止</button>
+    </div>
+    <video class="remote-video" id="remoteVideo" autoplay muted playsinline></video>
+    <div class="lab-status" id="labStatus">尚未连接</div>
+  </section>
+
+  <script>
+    (function () {
+      'use strict';
+      var rerun = document.getElementById('rerun');
+      var summary = document.getElementById('summary');
+      var summaryText = document.getElementById('summaryText');
+
+      function setValue(id, text, ok) {
+        var el = document.getElementById(id);
+        el.textContent = text;
+        el.className = 'value' + (ok === true ? ' ok' : ok === false ? ' bad' : '');
+      }
+
+      function finish(kind, text) {
+        summary.className = 'summary ' + kind;
+        summaryText.textContent = text;
+        rerun.disabled = false;
+      }
+
+      function timeout(ms, label) {
+        return new Promise(function (_, reject) {
+          setTimeout(function () { reject(new Error(label)); }, ms);
+        });
+      }
+
+      function collectVideoCodecs() {
+        var source = null;
+        if (window.RTCRtpReceiver && typeof RTCRtpReceiver.getCapabilities === 'function') {
+          source = RTCRtpReceiver.getCapabilities('video');
+        } else if (window.RTCRtpSender && typeof RTCRtpSender.getCapabilities === 'function') {
+          source = RTCRtpSender.getCapabilities('video');
+        }
+        var names = [];
+        if (source && Array.isArray(source.codecs)) {
+          source.codecs.forEach(function (codec) {
+            var name = String(codec.mimeType || '').toLowerCase();
+            if (name && names.indexOf(name) < 0) names.push(name);
+          });
+        }
+        return names;
+      }
+
+      function renderCodecs(codecs) {
+        var list = document.getElementById('codecs');
+        list.textContent = '';
+        if (!codecs.length) {
+          var empty = document.createElement('span');
+          empty.className = 'codec';
+          empty.textContent = '未报告';
+          list.appendChild(empty);
+          return;
+        }
+        codecs.forEach(function (name) {
+          var item = document.createElement('span');
+          item.className = 'codec';
+          item.textContent = name.replace('video/', '').toUpperCase();
+          list.appendChild(item);
+        });
+      }
+
+      async function probeDataChannel() {
+        var left = new RTCPeerConnection({ iceServers: [] });
+        var right = new RTCPeerConnection({ iceServers: [] });
+        var startedAt = 0;
+        try {
+          left.onicecandidate = function (event) {
+            if (event.candidate) right.addIceCandidate(event.candidate).catch(function () {});
+          };
+          right.onicecandidate = function (event) {
+            if (event.candidate) left.addIceCandidate(event.candidate).catch(function () {});
+          };
+          right.ondatachannel = function (event) {
+            event.channel.onmessage = function (message) {
+              if (message.data === 'serein-probe') event.channel.send('serein-ack');
+            };
+          };
+
+          var channel = left.createDataChannel('serein-capability-probe');
+          var result = new Promise(function (resolve, reject) {
+            channel.onopen = function () {
+              startedAt = performance.now();
+              channel.send('serein-probe');
+            };
+            channel.onmessage = function (event) {
+              if (event.data === 'serein-ack') resolve(Math.max(0, Math.round(performance.now() - startedAt)));
+            };
+            channel.onerror = function () { reject(new Error('data_channel_error')); };
+          });
+
+          var offer = await left.createOffer();
+          await left.setLocalDescription(offer);
+          await right.setRemoteDescription(offer);
+          var answer = await right.createAnswer();
+          await right.setLocalDescription(answer);
+          await left.setRemoteDescription(answer);
+          return await Promise.race([result, timeout(5000, 'data_channel_timeout')]);
+        } finally {
+          left.close();
+          right.close();
+        }
+      }
+
+      async function run() {
+        rerun.disabled = true;
+        summary.className = 'summary';
+        summaryText.textContent = '正在进行本地能力检测…';
+        setValue('rtc', '检测中');
+        setValue('channel', '检测中');
+        setValue('h264', '检测中');
+        setValue('rtt', '—');
+
+        var hasRtc = typeof window.RTCPeerConnection === 'function';
+        setValue('rtc', hasRtc ? '支持' : '不支持', hasRtc);
+
+        var codecs = collectVideoCodecs();
+        var hasH264 = codecs.indexOf('video/h264') >= 0;
+        renderCodecs(codecs);
+        setValue('h264', hasH264 ? '已报告' : '未报告', hasH264);
+
+        if (!hasRtc) {
+          setValue('channel', '不可用', false);
+          finish('failed', '当前 ArkWeb 没有暴露 RTCPeerConnection，不能直接承载 WebRTC 远控。');
+          return;
+        }
+
+        try {
+          var rtt = await probeDataChannel();
+          setValue('channel', '已建立', true);
+          setValue('rtt', String(rtt) + ' ms', true);
+          if (hasH264) {
+            finish('done', '基础能力通过，可以进入手机端远程画面接收实验。');
+          } else {
+            finish('failed', '数据通道可用，但 ArkWeb 未报告 H.264；下一步需要真机视频轨道验证。');
+          }
+        } catch (error) {
+          setValue('channel', '失败', false);
+          setValue('rtt', '超时', false);
+          finish('failed', 'WebRTC 存在，但本地数据通道未能建立：' + String(error && error.message ? error.message : error));
+        }
+      }
+
+      rerun.addEventListener('click', run);
+      run();
+    }());
+  </script>
+  <script>
+    (function () {
+      'use strict';
+      var socket = null;
+      var peer = null;
+      var pendingCandidates = [];
+      var connectButton = document.getElementById('connectLab');
+      var status = document.getElementById('labStatus');
+      var video = document.getElementById('remoteVideo');
+
+      function setStatus(text) { status.textContent = text; }
+      function send(message) {
+        if (socket && socket.readyState === WebSocket.OPEN) socket.send(JSON.stringify(message));
+      }
+      function stop() {
+        pendingCandidates = [];
+        if (peer) { peer.close(); peer = null; }
+        if (socket) { socket.close(); socket = null; }
+        if (video.srcObject) video.srcObject.getTracks().forEach(function (track) { track.stop(); });
+        video.srcObject = null;
+        video.className = 'remote-video';
+        connectButton.disabled = false;
+        setStatus('已停止');
+      }
+      async function addPendingCandidates() {
+        while (pendingCandidates.length && peer && peer.remoteDescription) {
+          await peer.addIceCandidate(pendingCandidates.shift());
+        }
+      }
+      async function connect() {
+        stop();
+        var value = document.getElementById('signalUrl').value.trim();
+        if (!/^wss?:\/\//i.test(value)) { setStatus('请输入 ws:// 或 wss:// 开头的信令地址'); return; }
+        connectButton.disabled = true;
+        setStatus('正在连接局域网信令…');
+        peer = new RTCPeerConnection({ iceServers: [] });
+        peer.onicecandidate = function (event) { if (event.candidate) send({ v:1, type:'remote.signal.ice', candidate:event.candidate }); };
+        peer.ontrack = function (event) {
+          video.srcObject = event.streams[0];
+          video.className = 'remote-video visible';
+          setStatus('已收到测试画面 · WebRTC ' + peer.connectionState);
+        };
+        peer.onconnectionstatechange = function () {
+          if (peer) setStatus('WebRTC：' + peer.connectionState);
+        };
+        peer.ondatachannel = function (event) {
+          event.channel.onmessage = function (message) {
+            if (message.data === 'ping') event.channel.send('pong');
+          };
+        };
+        socket = new WebSocket(value);
+        socket.onopen = function () { setStatus('信令已连接，等待电脑发送画面…'); send({ v:1, type:'remote.signal.client_ready' }); };
+        socket.onmessage = async function (event) {
+          try {
+            var message = JSON.parse(event.data);
+            if (message.type === 'remote.signal.offer') {
+              await peer.setRemoteDescription(message.description);
+              await addPendingCandidates();
+              var answer = await peer.createAnswer();
+              await peer.setLocalDescription(answer);
+              send({ v:1, type:'remote.signal.answer', description:peer.localDescription });
+            } else if (message.type === 'remote.signal.ice' && message.candidate) {
+              if (peer.remoteDescription) await peer.addIceCandidate(message.candidate);
+              else pendingCandidates.push(message.candidate);
+            } else if (message.type === 'remote.signal.peer_left') {
+              setStatus('电脑发送端已离开');
+            }
+          } catch (error) {
+            setStatus('信令处理失败：' + String(error && error.message ? error.message : error));
+          }
+        };
+        socket.onerror = function () { setStatus('局域网信令连接失败'); connectButton.disabled = false; };
+        socket.onclose = function () { if (peer && peer.connectionState !== 'connected') connectButton.disabled = false; };
+      }
+
+      connectButton.addEventListener('click', function () { connect().catch(function (error) { setStatus('连接失败：' + error.message); connectButton.disabled = false; }); });
+      document.getElementById('stopLab').addEventListener('click', stop);
+      addEventListener('beforeunload', stop);
+    }());
+  </script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+{
+  "modelVersion": "26.0.0",
+  "name": "serein",
+  "version": "1.0.0",
+  "description": "serein 远程审批客户端 - Claude Code 权限审批桥接",
+  "main": "",
+  "author": "",
+  "license": "MIT",
+  "dependencies": {}
+}

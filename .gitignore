@@ -1,0 +1,86 @@
+# ── 敏感配置（含 token / API key / 个人路径，绝不入版本库）──
+.claude/settings.json
+.claude/settings.local.json
+.claude/settings*.json
+.claude/key.enc
+.codex/
+/private/
+/AGENTS.md
+.env
+.env.local
+*.env
+serein.env
+
+# ── 个人 LLM 代理配置（非项目核心）──
+deploy/settings.json
+deploy/settings-*.json
+deploy/litellm-*.yaml
+cloudflared-config.yml
+
+# ── 废弃文件暂存区（准备删除，不跟踪）──
+_trash/
+
+# ── Node.js ──
+node_modules/
+agent/node_modules/
+
+# ── Go 构建产物 ──
+/backend/serein-server
+/backend/serein-server.exe
+/backend/serein-server-linux
+/backend/serein-server-linux-stripped
+*.exe
+
+# ── SQLite 数据文件 ──
+*.db
+*.db-wal
+*.db-shm
+
+# ── Python ──
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+
+# ── IDE ──
+.idea/
+.vscode/
+*.iml
+
+# ── 临时文件 ──
+/tmp/
+*.pid
+*.log
+*.tmp
+**/logs/
+.relay.pid
+.relay_quit
+.relay_project
+.agent.pid
+.serein-bound
+
+# ── HarmonyOS 构建缓存 ──
+.hvigor/
+ohos-sdk/
+harmony/sign-tmp/
+harmony/sign-rsa/
+harmony/jar-tmp/
+*.hap
+_verify_result.json
+harmony/local.properties
+
+# ── 备份文件 ──
+*.bak
+*.bak-*
+
+# ── 二进制工具 ──
+agent/bin/
+deploy/ntfy/*.exe
+/remote/windows-host/build/
+/remote/windows-host/bridge/serein-remote-bridge.exe
+
+# ── 上传文件 ──
+uploads/
+
+# HarmonyOS ���������־
+harmony/build_result*.txt

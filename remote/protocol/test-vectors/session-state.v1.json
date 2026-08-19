@@ -1,0 +1,8 @@
+{
+  "v": 1,
+  "type": "remote.session.state",
+  "session_id": "remote-session-0001",
+  "revision": 4,
+  "state": "connected_view",
+  "changed_at_ms": 0
+}

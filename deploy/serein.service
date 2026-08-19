@@ -1,0 +1,28 @@
+[Unit]
+Description=serein backend
+After=network.target
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/opt/serein
+EnvironmentFile=-/opt/serein/serein.env
+ExecStart=/opt/serein/serein-server
+# always: 无论正常/异常/OOM 退出都重启，确保后端常驻。
+# 之前 on-failure 只在异常退出时拉起，OOM kill 或 exit 0 不会重启。
+Restart=always
+RestartSec=5
+# 防止反复崩溃刷爆 CPU：30s 内重启超 5 次就停止重试
+StartLimitIntervalSec=30
+StartLimitBurst=5
+# watchdog：后端需定期 sd_notify(WATCHDOG=1) 才生效。
+# 当前后端未集成 libsystemd notify，启用 WatchdogSec 会误判死亡反复重启，
+# 故先注释。集成后取消注释即可获得死锁/卡死自动重启能力。
+# WatchdogSec=60
+# OOM 后系统杀进程，systemd 配合 Restart=always 拉起
+OOMPolicy=kill
+StandardOutput=append:/opt/serein/serein-stdout.log
+StandardError=append:/opt/serein/serein-stderr.log
+
+[Install]
+WantedBy=multi-user.target

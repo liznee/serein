@@ -1,0 +1,14 @@
+{
+  "v": 1,
+  "type": "remote.host.capabilities",
+  "host_id": "local-poc-host",
+  "capture": ["dxgi-duplication"],
+  "video_codecs": [],
+  "transports": [],
+  "hardware_encoder": false,
+  "input": [],
+  "monitors": 1,
+  "unattended_enabled": false,
+  "secure_desktop": false,
+  "generated_at_ms": 0
+}

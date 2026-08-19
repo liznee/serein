@@ -1,0 +1,11 @@
+# ntfy 服务配置(纯 pub/sub 总线模式) —— Windows 本地开发
+base-url: "http://localhost:8090"
+listen-http: ":8090"
+cache-file: "ntfy-cache.db"
+behind-proxy: false
+
+# 生产环境强烈建议启用访问控制(防 topic 被滥用):
+# auth-file: "ntfy-auth.db"
+# auth-default-access: "deny-all"
+# 然后为 serein-approvals topic 创建读写 token:
+#   ntfy access 'serein-approvals' read-write
