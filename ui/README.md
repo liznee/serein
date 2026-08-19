@@ -1,5 +1,7 @@
 # Serein
 
+> 🌐 官网：**[https://www.serein.run](https://www.serein.run)**
+
 > 面向 HarmonyOS 的 Claude Code / Codex 自托管移动工作台：在手机上继续本地 CLI 会话，并为 Claude Code 提供远程风险审批。
 
 **当前状态：开源 V1.0 Release Candidate。** 候选版已通过自动化测试、公开导出、依赖审计和独立构建；Push Kit 正式身份与同一台真机 100 次端到端回归仍是 GA 门禁。RC 可以体验和审计，不建议直接连接拥有生产权限的主机。
@@ -75,6 +77,16 @@ Claude Code PreToolUse -> Python Hook -> Go Backend -> phone approval
 技术栈：Go + chi + SQLite、Node.js + node-pty、Python 标准库、HarmonyOS ArkTS。
 
 ## 快速开始
+
+### 0. Windows 一行安装（最快路径）
+
+PowerShell 中执行（自动检查 Node/Python、下载 Agent、安装依赖、创建 `serein` 命令）：
+
+```powershell
+irm https://www.serein.run/install.ps1 | iex
+```
+
+> 该脚本下载 PC 端 Agent 并创建全局 `serein` 命令；后端和 HarmonyOS App 仍需按下文 2、5 步配置。完整参数见 `install.ps1` 头部说明。
 
 ### 1. 准备环境
 
