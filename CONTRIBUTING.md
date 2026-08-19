@@ -1,23 +1,30 @@
 # Contributing
 
-Issues and pull requests are welcome. Serein is an experimental project, so
-small, focused changes are easier to review than broad rewrites.
+## Feedback first
 
-Before opening a pull request:
+Serein is currently in a feedback-only phase. Please open an **Issue** for:
 
-1. Explain the user problem and the intended behavior.
-2. Add or update tests for behavior changes.
-3. Run the relevant checks:
+- bugs, crashes or unexpected behaviour;
+- feature requests and usability feedback;
+- security concerns (see `SECURITY.md` for the preferred channel).
 
-   ```text
-   cd backend && go test ./... && go vet ./...
-   cd agent && python -m pytest -q && npm test
-   cd hooks && python -m unittest discover -s . -p 'test_*.py' -q
-   ```
+## Pull requests
 
-4. Do not include tokens, logs, databases, build artifacts, private paths, or
-   generated signing files.
-5. For security-sensitive changes, explain the threat model and failure mode.
+External pull requests are **not being merged for now** while the project
+stabilises. Do not open a pull request expecting it to be accepted; if you have
+a concrete fix, describe it in an Issue with a minimal reproduction or patch
+sketch, and it will be considered once maintainers open contributions.
+
+If you want to experiment, feel free to fork the repository.
+
+## Reporting guidelines
+
+1. Explain the observed behaviour and what you expected.
+2. Include the Serein version, HarmonyOS version and backend version when
+   relevant.
+3. Never include tokens, logs with credentials, databases, build artifacts,
+   private paths or generated signing files.
+4. For security-sensitive reports, describe the threat model and failure mode.
 
 Please keep compatibility with self-hosted deployments in mind. Changes to
 the HTTP API, pairing format, hook decisions, or environment variables should
