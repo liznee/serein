@@ -22,7 +22,8 @@ param(
   [string]$Token = "",
   [string]$InstallUrl = "",
   [string]$InstallDir = "",
-  [switch]$Force
+  [switch]$Force,
+  [switch]$Update
 )
 
 $ErrorActionPreference = "Stop"
@@ -114,8 +115,9 @@ if (-not $pythonOk) {
 # ═══════════════════════════════════════════
 Write-Step "准备安装目录: $InstallDir"
 
-if ((Test-Path $InstallDir) -and -not $Force) {
+if ((Test-Path $InstallDir) -and -not $Force -and -not $Update) {
   Write-Warn "目录已存在: $InstallDir"
+  Write-Info "（重跑本脚本即从 GitHub main 拉取最新版本；使用 -Update 可免确认更新）"
   $choice = Read-Host "    是否覆盖安装？(y/N)"
   if ($choice -ne 'y' -and $choice -ne 'Y') {
     Write-Info "安装已取消"
@@ -162,7 +164,8 @@ $files = @(
   @{ src = "agent/serein.bat";         dst = "agent/serein.bat" },
   @{ src = "bin/serein.js";            dst = "bin/serein.js" },
   @{ src = "hooks/approval_hook.py";   dst = "hooks/approval_hook.py" },
-  @{ src = "hooks/risk_classify.py";   dst = "hooks/risk_classify.py" }
+  @{ src = "hooks/risk_classify.py";   dst = "hooks/risk_classify.py" },
+  @{ src = "VERSION";                  dst = "VERSION" }
 )
 
 $downloadOk = $true
@@ -203,6 +206,28 @@ if (-not $downloadOk) {
 if (-not $downloadOk) {
   Write-Err "文件下载失败，请检查网络连接或使用本地安装"
   exit 1
+}
+
+# ── 版本信息（下载 VERSION 文件后对比）──
+$verFile = Join-Path $InstallDir "VERSION"
+$newVer = ""
+if (Test-Path $verFile) {
+  try { $newVer = (Get-Content $verFile -Raw).Trim() } catch { $newVer = "" }
+}
+if ($newVer) {
+  $verStamp = Join-Path $InstallDir ".installed-version"
+  $oldVer = ""
+  if (Test-Path $verStamp) { try { $oldVer = (Get-Content $verStamp -Raw).Trim() } catch { $oldVer = "" } }
+  if ($oldVer -and $oldVer -ne $newVer) {
+    Write-Host "    [↑] 已更新: v$oldVer -> v$newVer" -ForegroundColor Green
+  } elseif ($oldVer -eq $newVer) {
+    Write-Host "    [=] 已是最新版本 v$newVer" -ForegroundColor Green
+  } else {
+    Write-Host "    [*] 已安装 v$newVer" -ForegroundColor Green
+  }
+  Set-Content $verStamp $newVer -Encoding ASCII -NoNewline
+} else {
+  Write-Warn "未获取到版本信息（VERSION 文件缺失）"
 }
 
 # ═══════════════════════════════════════════

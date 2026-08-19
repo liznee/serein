@@ -217,6 +217,22 @@ scripts/   安装、检查、测试和发布辅助脚本
 - [Push Kit 配置](docs/PUSH_KIT_SETUP.md)
 - [官网维护说明](docs/WEBSITE_IMPLEMENTATION.md)
 
+## 更新
+
+**PC 端（Agent / Relay）**：重新执行一行安装命令即可。脚本会从 GitHub `main` 分支拉取最新文件，并自动对比版本：
+
+```powershell
+irm https://www.serein.run/install.ps1 | iex
+```
+
+- 已安装过会提示"目录已存在"，输入 `y` 覆盖更新；
+- 需要免确认更新时，本地执行：`powershell -ExecutionPolicy Bypass -File install.ps1 -Update`；
+- 当前安装版本记录在 `~/.serein/.installed-version`，每次运行会显示"已是最新版本 / 已更新到 vX.Y.Z"。
+
+**HarmonyOS App**：开源版没有应用商店 OTA，需要自己用 DevEco Studio 编译最新源码并侧载安装（调试签名有效期 14 天，更换签名后需在手机端重新扫码配对一次）。
+
+**关注新版本**：在 GitHub 仓库点 **Star** 并 **Watch → Releases**，发布新版本时会收到通知。
+
 ## 联系
 
 - 官网：<https://www.serein.run>
