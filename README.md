@@ -8,6 +8,18 @@
 
 Serein 由个人维护并大量使用 AI 协助开发。它不隶属于 Anthropic、OpenAI 或华为，也不提供这些平台的账号、额度或模型服务。
 
+## 产品预览
+
+<p align="center">
+  <img src="ui/screenshots/projects-showcase.jpg" alt="Serein 项目管理" width="19%" />
+  <img src="ui/screenshots/terminal-showcase.jpg" alt="Serein 终端会话" width="19%" />
+  <img src="ui/screenshots/approvals-showcase.jpg" alt="Serein 风险审批" width="19%" />
+  <img src="ui/screenshots/community-showcase.jpg" alt="Serein 社区协作" width="19%" />
+  <img src="ui/screenshots/remote-showcase.jpg" alt="Serein 远程桌面" width="19%" />
+</p>
+
+<p align="center"><sub>项目管理 · 终端会话 · 风险审批 · 社区协作 · 远程桌面</sub></p>
+
 ## 它解决什么问题
 
 - 在 HarmonyOS 原生 App 中查看并继续电脑上的 Claude Code / Codex CLI 会话；
