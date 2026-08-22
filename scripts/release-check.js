@@ -41,7 +41,8 @@ function ok(message) {
 }
 
 function main() {
-  const packageJson = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
+  const packageJsonText = fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8').replace(/^\uFEFF/, '');
+  const packageJson = JSON.parse(packageJsonText);
   if (!packageJson.name || !packageJson.version || !packageJson.bin?.serein) {
     fail('package.json 缺少 name、version 或 bin.serein');
     return;
